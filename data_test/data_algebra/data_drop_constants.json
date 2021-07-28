@@ -1,0 +1,35 @@
+[
+   { "test":
+       [{"coefficient": 2, "constants": [2,3], "derivatives": [1,0,1,2,0],"variable": "xse"},
+        {"coefficient": 2, "constants": [2,3], "derivatives": [1,0,1,0,0],"variable": "xse"},
+        {"coefficient": -2, "constants": [2,3], "derivatives": [1,1,1,2,0],"variable": "xse"},
+        {"coefficient": 2, "constants": [2,3], "derivatives": [1,0,1,0,1],"variable": "xse"}],
+     "result":
+     [{"coefficient": 1, "constants": [0,0], "derivatives": [1,0,1,2,0],"variable": "xse"},
+        {"coefficient": 1, "constants": [0,0], "derivatives": [1,0,1,0,0],"variable": "xse"},
+        {"coefficient": -1, "constants": [0,0], "derivatives": [1,1,1,2,0],"variable": "xse"},
+        {"coefficient": 1, "constants": [0,0], "derivatives": [1,0,1,0,1],"variable": "xse"}]
+    },
+    { "test":
+        [{"coefficient": 3, "constants": [1,1,2], "derivatives": [1,0,1,2,0],"variable": "xse"},
+         {"coefficient": 2, "constants": [1,1,2], "derivatives": [1,0,1,0,0],"variable": "xse"},
+         {"coefficient": -2, "constants": [1,1,2], "derivatives": [1,1,1,2,0],"variable": "xse"},
+         {"coefficient": 2, "constants": [1,1,2], "derivatives": [1,0,1,0,1],"variable": "xse"}],
+      "result":
+      [{"coefficient": 3, "constants": [0,0,0], "derivatives": [1,0,1,2,0],"variable": "xse"},
+         {"coefficient": 2, "constants": [0,0,0], "derivatives": [1,0,1,0,0],"variable": "xse"},
+         {"coefficient": -2, "constants": [0,0,0], "derivatives": [1,1,1,2,0],"variable": "xse"},
+         {"coefficient": 2, "constants": [0,0,0], "derivatives": [1,0,1,0,1],"variable": "xse"}]
+     },
+     { "test":
+        [{"coefficient": 1, "constants": [1, 2], "derivatives": [1,2,0],"variable": "xse"},
+         {"coefficient": 1, "constants": [0,2], "derivatives": [1,0,0],"variable": "xse"},
+         {"coefficient": 1, "constants": [1,2], "derivatives": [1,1,1],"variable": "xse"},
+         {"coefficient": 1, "constants": [1,1], "derivatives": [1,0,1],"variable": "xse"}],
+      "result":
+        [{"coefficient": 1, "constants": [1, 2], "derivatives": [1,2,0],"variable": "xse"},
+         {"coefficient": 1, "constants": [0,2], "derivatives": [1,0,0],"variable": "xse"},
+         {"coefficient": 1, "constants": [1,2], "derivatives": [1,1,1],"variable": "xse"},
+         {"coefficient": 1, "constants": [1,1], "derivatives": [1,0,1],"variable": "xse"}]
+     }
+]

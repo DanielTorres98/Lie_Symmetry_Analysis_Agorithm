@@ -1,0 +1,12 @@
+*.pyc
+.vscode/
+.idea/
+
+temp/
+debugging/
+__pycache__
+.pytest_cache
+.ipynb_checkpoints
+.DS_Store
+
+*.log

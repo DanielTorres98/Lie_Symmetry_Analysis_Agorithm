@@ -1,0 +1,77 @@
+[
+        {
+            "coefficient": 4,
+            "constants": [
+                2,
+                3
+            ],
+            "derivatives": [
+                1,
+                0,
+                3,
+                2
+            ],
+            "variable": "xse",
+            "answer": false
+        },
+        {
+            "coefficient": 1,
+            "constants": [
+                0,
+                1
+            ],
+            "derivatives": [
+                1,
+                0,
+                3,
+                2
+            ],
+            "variable": "xse",
+            "answer": false
+        },
+        {
+            "coefficient": 1,
+            "constants": [
+                0,
+                0
+            ],
+            "derivatives": [
+                0,
+                1,
+                4,
+                2
+            ],
+            "variable": "xse",
+            "answer": true
+        },
+        {
+            "coefficient": 1,
+            "constants": [
+                0,
+                0
+            ],
+            "derivatives": [
+                1,
+                1,
+                3,
+                3
+            ],
+            "variable": "eta",
+            "answer": false
+        },
+        {
+            "coefficient": 1,
+            "constants": [
+                0,
+                0
+            ],
+            "derivatives": [
+                2,
+                1,
+                4,
+                3
+            ],
+            "variable": "xse",
+            "answer": true
+        }
+]
