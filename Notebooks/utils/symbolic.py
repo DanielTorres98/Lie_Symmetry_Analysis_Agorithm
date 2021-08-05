@@ -1,5 +1,6 @@
 import sympy as sp
 
+
 def symbolic_derivative(list_devs, var, var_list):
     """Given a list of derivatives executes all the
        derivatives on the variable.
@@ -90,8 +91,8 @@ def take_derivative(list_devs, var, var_list):
 
     Returns
     -------
-    [type]
-        [description]
+    [sp.symbol]
+        symbolic representation of the derivative
     """
     D_v = zip(list_devs, var_list)
     var_str = var
@@ -100,3 +101,4 @@ def take_derivative(list_devs, var, var_list):
             var_str = var_str + '_' + v
     var = sp.symbols(var_str)
     return var
+
