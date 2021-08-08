@@ -162,7 +162,6 @@ def higher_infinitesimals_generator(list_inft_indep, list_inft,
     inft_derivatives = []
     var_combinatorics = list_combinatorics(list_indep, order)
     indvar_xis = zip(list_indep, list_inft_indep)
-    import ipdb; ipdb.set_trace()
     for deriv_vars_order in var_combinatorics:
         aux_list_deriv = []
         aux_list_inft = []
