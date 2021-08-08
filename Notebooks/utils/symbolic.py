@@ -161,7 +161,6 @@ def higher_infinitesimals_generator(list_inft_indep, list_inft,
     dep_vars_derivatives = []
     inft_derivatives = []
     var_combinatorics = list_combinatorics(list_indep, order)
-    indvar_xis = zip(list_indep, list_inft_indep)
     for deriv_vars_order in var_combinatorics:
         aux_list_deriv = []
         aux_list_inft = []
@@ -177,10 +176,53 @@ def higher_infinitesimals_generator(list_inft_indep, list_inft,
                 dummy_eta = inft_derivatives[idx_1][idx_2]
             aux_list_deriv.append(D(y_aux, x_aux))
             dummy_eta = dummy_eta.diff(x_aux)           
-            for ind_var, xi in indvar_xis:
-                dummy_eta -= D(y_aux, ind_var)*(
-                    xi.diff(x_aux))
+            for i in range(len(list_indep)):
+                dummy_eta -= D(y_aux, list_indep[i])*(
+                    list_inft_indep[i].diff(x_aux))
             aux_list_inft.append(dummy_eta)
         dep_vars_derivatives.append(aux_list_deriv)
         inft_derivatives.append(aux_list_inft)
     return inft_derivatives, dep_vars_derivatives
+
+def group_operator(F, variables, infts):
+    """given a differential equation F, gives the
+    Lie operator acting over F. 
+
+    Parameters
+    ----------
+    F : [sympy expression]
+        It is the partial differential equation written with
+        sympy symbols
+    variables : [list]
+        list containing all variables and the possible derivatives
+        according to the order of the differential equation.
+    infts : [list]
+        list with the infinitesimals
+    """
+    var_inft = zip(variables, infts)
+    LF = 0
+    for var, inft in var_inft:
+        LF += sp.simplify(inft*D(F, var))
+    return LF
+
+def der_relabel(dep_vars_derivatives, F):
+    derivatives_relabel = []
+    for d in dep_vars_derivatives:
+        d_str = str(d.args[0]).split('(')[0] + '_' 
+        d_order = list(d.args)
+        d_order.pop(0)
+        for tup in d_order:
+            for t in range(tup[1]):
+                d_str = f'{d_str}{tup[0]}'
+        derivatives_relabel.append(sp.symbols(d_str))
+
+    derivatives_relabel.reverse()
+    dep_vars_derivatives.reverse()
+    names_derivatives = zip(derivatives_relabel, 
+                            dep_vars_derivatives)
+
+    for name, deriv in names_derivatives:
+        F = F.subs({deriv:name})
+    derivatives_relabel.reverse()
+    dep_vars_derivatives.reverse()
+    return F, derivatives_relabel
