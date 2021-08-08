@@ -1,4 +1,6 @@
 import sympy as sp
+from sympy import Derivative as D
+from utils.combinatorics import list_combinatorics
 
 
 def symbolic_derivative(list_devs, var, var_list):
@@ -31,8 +33,9 @@ def symbolic_derivative(list_devs, var, var_list):
     var = sp.symbols(var_str)
     return var
 
-def dict_to_symb(term, var_dict, var_list, 
-                    sym_cte_list, one_term):
+
+def dict_to_symb(term, var_dict, var_list,
+                 sym_cte_list, one_term):
     """Given a dictionary it returns the symbolic
        equivalent. It drops all constants if it is 
        just one term.
@@ -72,6 +75,7 @@ def dict_to_symb(term, var_dict, var_list,
     sym_term = coeff*a*D
     return sym_term
 
+
 def take_derivative(list_devs, var, var_list):
     """Given a list of derivatives executes all the
        derivatives on the variable.
@@ -102,3 +106,81 @@ def take_derivative(list_devs, var, var_list):
     var = sp.symbols(var_str)
     return var
 
+
+def infinitesimals_generator(list_indep, list_dep):
+    """Creates the infinitesimals of the independent and
+    depentants variables. Not the derivatives. 
+
+    Parameters
+    ----------
+    list_indep : [list]
+        list with the independent variables.
+    list_dep : [list]
+        list with the dependent variables.
+
+    Returns
+    -------
+    [list]
+        list with the infinitesimals. 
+    """
+    infts = []
+    variables = list_indep + list_dep
+    for var in list_indep:
+        f = f'xi^{var}'
+        infts.append(sp.Function(f)(*variables))
+    for var in list_dep:
+        f = f'eta^{var}'.split('(')[0]
+        infts.append(sp.Function(f)(*variables))
+    return infts
+
+
+def higher_infinitesimals_generator(list_inft_indep, list_inft,
+                                    order, list_indep, list_dep):
+    """This funtions applies the logic to get the infintesimals
+       of the derivatives.
+
+    Parameters
+    ----------
+    list_inft_indep : [list]
+        list of the infinitesimals of the independent variables
+    list_inft : [list]
+        list of the infinitesimals of the dependent variables
+    order : [int]
+        higher order involved in the system of differential equations
+    list_indep : [list]
+        list with the independant variables
+    list_dep : [type]
+        list with the dependant variables
+
+    Returns
+    -------
+    [lists]
+        A list with all possible derivatives of the dependant
+        variables and a list with the respective infinitesimals
+    """
+    dep_vars_derivatives = []
+    inft_derivatives = []
+    var_combinatorics = list_combinatorics(list_indep, order)
+    indvar_xis = zip(list_indep, list_inft_indep)
+    for deriv_vars_order in var_combinatorics:
+        aux_list_deriv = []
+        aux_list_inft = []
+        for idx_2 in range(len(list_dep)):
+            if len(deriv_vars_order) == 1:
+                y_aux = list_dep[idx_2]
+                x_aux =  deriv_vars_order[0]
+                dummy_eta = list_inft[idx_2]
+            else:
+                idx_1 = var_combinatorics.index(deriv_vars_order[:-1])
+                y_aux = dep_vars_derivatives[idx_1][idx_2]
+                x_aux = deriv_vars_order[-1]
+                dummy_eta = inft_derivatives[idx_1][idx_2]
+            aux_list_deriv.append(D(y_aux, x_aux))
+            dummy_eta = dummy_eta.diff(x_aux)           
+            for ind_var, xi in indvar_xis:
+                dummy_eta -= D(y_aux, ind_var)*(
+                    xi.diff(x_aux))
+            aux_list_inft.append(dummy_eta)
+        dep_vars_derivatives.append(aux_list_deriv)
+        inft_derivatives.append(aux_list_inft)
+    return inft_derivatives, dep_vars_derivatives

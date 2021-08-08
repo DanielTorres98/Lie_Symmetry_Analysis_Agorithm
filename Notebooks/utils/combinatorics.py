@@ -1,6 +1,6 @@
-import itertools
+from itertools import combinations_with_replacement as cwr
 
-def list_combinatorics(variables):
+def list_combinatorics(variables, order):
     """Given a list of variables returns
        all possible combinations.
 
@@ -9,6 +9,9 @@ def list_combinatorics(variables):
     variables : [list]
         A list with the symbolic variables.
 
+    order : [int]
+        order of the differential equation
+
     Returns
     -------
     [list]
@@ -16,7 +19,7 @@ def list_combinatorics(variables):
         combinations
     """
     var_combinatorics = []
-    for L in range(0, len(variables)+1):
-        for subset in itertools.combinations(variables, L):
-            var_combinatorics.append(list(subset))
+    for o in range(1, order+1):
+        var_combinatorics = var_combinatorics + list(cwr(variables, o))
+    var_combinatorics = [list(x) for x in var_combinatorics]
     return var_combinatorics
