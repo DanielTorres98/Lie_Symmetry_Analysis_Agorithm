@@ -184,6 +184,7 @@ def higher_infinitesimals_generator(list_inft_indep, list_inft,
         inft_derivatives.append(aux_list_inft)
     return inft_derivatives, dep_vars_derivatives
 
+
 def group_operator(F, variables, infts):
     """given a differential equation F, gives the
     Lie operator acting over F. 
