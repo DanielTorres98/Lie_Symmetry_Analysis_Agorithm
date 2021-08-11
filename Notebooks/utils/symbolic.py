@@ -156,10 +156,10 @@ def higher_infinitesimals_generator(list_inft_indep, list_inft,
     -------
     [lists]
         A list with all possible derivatives of the dependant
-        variables and a list with the respective infinitesimals
+        variables and a list with the respective infinitesimals.
     """
     dep_vars_derivatives = []
-    inft_derivatives = []
+    deriv_infts = []
     var_combinatorics = list_combinatorics(list_indep, order)
     for deriv_vars_order in var_combinatorics:
         aux_list_deriv = []
@@ -168,21 +168,21 @@ def higher_infinitesimals_generator(list_inft_indep, list_inft,
             if len(deriv_vars_order) == 1:
                 y_aux = list_dep[idx_2]
                 x_aux =  deriv_vars_order[0]
-                dummy_eta = list_inft[idx_2]
+                eta_aux = list_inft[idx_2]
             else:
                 idx_1 = var_combinatorics.index(deriv_vars_order[:-1])
                 y_aux = dep_vars_derivatives[idx_1][idx_2]
                 x_aux = deriv_vars_order[-1]
-                dummy_eta = inft_derivatives[idx_1][idx_2]
+                eta_aux = deriv_infts[idx_1][idx_2]
             aux_list_deriv.append(D(y_aux, x_aux))
-            dummy_eta = dummy_eta.diff(x_aux)           
+            eta_aux = eta_aux.diff(x_aux)           
             for i in range(len(list_indep)):
-                dummy_eta -= D(y_aux, list_indep[i])*(
+                eta_aux -= D(y_aux, list_indep[i])*(
                     list_inft_indep[i].diff(x_aux))
-            aux_list_inft.append(dummy_eta)
+            aux_list_inft.append(eta_aux)
         dep_vars_derivatives.append(aux_list_deriv)
-        inft_derivatives.append(aux_list_inft)
-    return inft_derivatives, dep_vars_derivatives
+        deriv_infts.append(aux_list_inft)
+    return deriv_infts, dep_vars_derivatives
 
 
 def group_operator(F, variables, infts):
@@ -207,6 +207,25 @@ def group_operator(F, variables, infts):
     return LF
 
 def der_relabel(dep_vars_derivatives, F):
+    """Given list of derivatives it changes the
+    partial derivative notation for subscripts. 
+
+    Parameters
+    ----------
+    dep_vars_derivatives : [list]
+        list of all posible derivatives
+    F : [sympy expression]
+        Functional to substitute in.
+
+    Returns
+    -------
+    F [sympy expression]:
+        The functional with the new notation of the
+        derivatives.
+    
+    derivatives_relabel [list]:
+        A list with the new symbols for the visualization.
+    """
     derivatives_relabel = []
     for d in dep_vars_derivatives:
         d_str = str(d.args[0]).split('(')[0] + '_' 
@@ -214,16 +233,54 @@ def der_relabel(dep_vars_derivatives, F):
         d_order.pop(0)
         for tup in d_order:
             for t in range(tup[1]):
-                d_str = f'{d_str}{tup[0]}'
+                if '(' in str(tup[0]):
+                    v = str(tup[0]).split('(')[0]
+                else:
+                    v = str(tup[0])
+                d_str = f'{d_str}{v}'
         derivatives_relabel.append(sp.symbols(d_str))
 
-    derivatives_relabel.reverse()
-    dep_vars_derivatives.reverse()
-    names_derivatives = zip(derivatives_relabel, 
-                            dep_vars_derivatives)
-
-    for name, deriv in names_derivatives:
-        F = F.subs({deriv:name})
-    derivatives_relabel.reverse()
-    dep_vars_derivatives.reverse()
+    F = subs_new_vars(derivatives_relabel, 
+                        dep_vars_derivatives, F)
     return F, derivatives_relabel
+
+def subs_new_vars(new_labeling, previous_labeling, F):
+    """Substitutes notation to another format
+
+    Parameters
+    ----------
+    new_labeling : [list]
+        list with the new labeling
+    previous_labeling : [list]
+        list with the old symbols
+    F : [sympy expression]
+        expression to apply the new labeling
+
+    Returns
+    -------
+    F: [sympy expression]
+        expression in the new format
+    """
+    new_labeling.reverse()
+    previous_labeling.reverse()
+    new_old_names = zip(new_labeling, 
+                            previous_labeling)
+
+    for new, old in new_old_names:
+        F = F.subs({old:new})
+    new_labeling.reverse()
+    previous_labeling.reverse()
+    return F
+
+def deriv_infts(infts, variables, order):
+    deriv_infts = []
+    var_combinatorics = list_combinatorics(variables, order)
+    for deriv_vars_order in var_combinatorics:
+        for inft in infts:
+            inft_aux = inft
+            for var in deriv_vars_order:
+                inft_aux = D(inft_aux, var)
+            deriv_infts.append(inft_aux) 
+    return deriv_infts
+
+
