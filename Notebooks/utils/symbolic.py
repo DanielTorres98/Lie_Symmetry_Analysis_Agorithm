@@ -267,7 +267,7 @@ def subs_new_vars(new_labeling, previous_labeling, F):
                             previous_labeling)
 
     for new, old in new_old_names:
-        F = F.subs({old:new})
+        F = F.xreplace({old: new})
     new_labeling.reverse()
     previous_labeling.reverse()
     return F
@@ -283,4 +283,62 @@ def deriv_infts(infts, variables, order):
             deriv_infts.append(inft_aux) 
     return deriv_infts
 
+def Diff(f, y_var, x_var, order):
+    dy = D(y_var, x_var).expand()
+    Df = D(f, x_var).expand()
+    for o in range(order):
+        Df += dy*D(f, y_var)
+        Df = Df.expand()
+        y_var = dy
+        dy = D(y_var, x_var).expand()
+    return Df
 
+def higher_infinitesimals_generator_2(list_inft_indep, list_inft,
+                                    order, list_indep, list_dep):
+    """This funtions applies the logic to get the infintesimals
+       of the derivatives.
+
+    Parameters
+    ----------
+    list_inft_indep : [list]
+        list of the infinitesimals of the independent variables
+    list_inft : [list]
+        list of the infinitesimals of the dependent variables
+    order : [int]
+        higher order involved in the system of differential equations
+    list_indep : [list]
+        list with the independant variables
+    list_dep : [type]
+        list with the dependant variables
+
+    Returns
+    -------
+    [lists]
+        A list with all possible derivatives of the dependant
+        variables and a list with the respective infinitesimals.
+    """
+    dep_vars_derivatives = []
+    deriv_infts = []
+    var_combinatorics = list_combinatorics(list_indep, order)
+    for deriv_vars_order in var_combinatorics:
+        aux_list_deriv = []
+        aux_list_inft = []
+        for idx_2 in range(len(list_dep)):
+            if len(deriv_vars_order) == 1:
+                y_aux = list_dep[idx_2]
+                x_aux =  deriv_vars_order[0]
+                eta_aux = list_inft[idx_2]
+            else:
+                idx_1 = var_combinatorics.index(deriv_vars_order[:-1])
+                y_aux = dep_vars_derivatives[idx_1][idx_2]
+                x_aux = deriv_vars_order[-1]
+                eta_aux = deriv_infts[idx_1][idx_2]
+            aux_list_deriv.append(D(y_aux, x_aux))
+            eta_aux = eta_aux.diff(x_aux)           
+            for i in range(len(list_indep)):
+                eta_aux -= D(y_aux, list_indep[i])*(
+                    list_inft_indep[i].diff(x_aux))
+            aux_list_inft.append(eta_aux)
+        dep_vars_derivatives.append(aux_list_deriv)
+        deriv_infts.append(aux_list_inft)
+    return deriv_infts, dep_vars_derivatives
