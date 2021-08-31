@@ -203,8 +203,8 @@ def group_operator(F, variables, infts):
     var_inft = zip(variables, infts)
     LF = 0
     for var, inft in var_inft:
-        LF += sp.simplify(inft*D(F, var))
-    return LF
+        LF += inft*D(F, var)
+    return sp.simplify(LF)
 
 def der_relabel(dep_vars_derivatives, F):
     """Given list of derivatives it changes the

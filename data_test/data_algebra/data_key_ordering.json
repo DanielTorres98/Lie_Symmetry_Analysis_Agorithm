@@ -1,0 +1,8 @@
+[ 
+    {
+    "original":
+    ["hey", "hey no", "no", "you", "yourself"],
+    "result":
+    ["hey no", "no", "yourself", "hey", "you"]
+    }
+ ]

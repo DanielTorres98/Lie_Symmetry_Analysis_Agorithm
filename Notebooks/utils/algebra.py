@@ -89,7 +89,7 @@ def drop_constants(eqn):
     return eqn
 
 
-def get_common_factors(XF, list_dep, list_indep):
+def get_common_factors(XF, list_dep, list_indep, constants):
     S = str(XF.expand())
     S = S.replace(' ', '')
     S = re.sub(r'\*{2}', "&", S)
@@ -104,6 +104,9 @@ def get_common_factors(XF, list_dep, list_indep):
     indep_var_str = [str(ele).replace(' ', '') for ele in list_indep]
     for var in indep_var_str:
         S = re.sub(f'(?<!\(|,){var}', "", S)
+    constants_str = [str(ele).replace(' ', '') for ele in constants]
+    for cte in constants_str:
+        S = re.sub(f'\**{cte}\**', "", S)
     S = re.sub(r'#', "Derivative", S)
     S = re.sub(r'\&', "^", S)
     S = re.sub(r'\*(?=[\+\-])', "", S)
@@ -118,6 +121,18 @@ def get_common_factors(XF, list_dep, list_indep):
 
 
 def key_ordering(keys):
+    """
+
+    Parameters
+    ----------
+    keys : [type]
+        [description]
+
+    Returns
+    -------
+    [type]
+        [description]
+    """
     keys_order = []
     while len(keys_order) < len(keys):
         for key_1 in keys:

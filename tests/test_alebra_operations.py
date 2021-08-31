@@ -16,3 +16,9 @@ def test_compare_derivatives(compare_derivatives_data_test):
     D1 = compare_derivatives_data_test["zero_term"]
     D2 = compare_derivatives_data_test["term"]
     assert compare_derivatives_data_test["result"] == algebra.compare_derivatives(D1, D2)
+
+def test_key_ordering(key_ordering_data_test):
+    original_list = key_ordering_data_test["original"]
+    result = key_ordering_data_test["result"]
+    ordered_list = algebra.key_ordering(original_list)
+    assert result == ordered_list
