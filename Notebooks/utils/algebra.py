@@ -326,7 +326,7 @@ def str_to_dict(f, term, arr_pow, arr_deriv, list_all, list_var):
     """
     if f.is_Mul:
         for i in f.args:
-            arr = str_to_dict(i, term, arr_pow, arr_deriv, list_all, list_var)
+            str_to_dict(i, term, arr_pow, arr_deriv, list_all, list_var)
     else:
         if f.args == ():
             if f.is_Integer:
@@ -348,8 +348,7 @@ def str_to_dict(f, term, arr_pow, arr_deriv, list_all, list_var):
             if var.is_Derivative:
                 term['variable'] = var.args[0]
                 for v in var.args[1:]:
-                    idx = np.where(list_var
-                                   == v[0])
+                    idx = np.where(list_var == v[0])
                     arr_deriv[idx] = v[1]
             else:
                 idx = np.where(list_all == f.args[0])
@@ -358,16 +357,22 @@ def str_to_dict(f, term, arr_pow, arr_deriv, list_all, list_var):
         if type(f) == type(sp.Subs(list_var[0],
                                    list_var[0], list_var[0])):
             s = str(f)
-            subs = re.split(',|\.', s)[-2]
-            subs_t = re.split(',|\.', s)[-1].strip(')')
+            if s.endswith('))'):
+                subs = re.split(',', s)[-3].strip(' ')
+                subs_t = re.split(',', s)[-2] + ',' + re.split(',', s)[-1]
+                subs_t = subs_t[:-1].strip(' ')
+            else:
+                subs = re.split(',',s)[-2].strip(' ')
+                subs_t = re.split(',',s)[-1].strip(')').strip(' ')
             s = s.replace(subs, subs_t)
             f = sp.sympify(parens(s).strip('('))
+            if isinstance(f, tuple):
+                f = f[0]
 
         if f.is_Derivative:
             term['variable'] = str(f.args[0]).split("(")[0]
             for v in f.args[1:]:
-                idx = np.where(list_var
-                               == v[0])
+                idx = np.where(list_var == v[0])
                 arr_deriv[idx] = v[1]
 
     term['constants'] = list(arr_pow.astype(int))
