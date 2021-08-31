@@ -90,6 +90,26 @@ def drop_constants(eqn):
 
 
 def get_common_factors(XF, list_dep, list_indep, constants):
+    """This funtion creates an empty dictionary where the keys
+    are all possible commmon factors of the determining equations.
+
+    Parameters
+    ----------
+    XF : [symbolic expresion]
+        The Lie operator acting over a differential equation F.
+    list_dep : [list]
+        list with all dependant variables
+    list_indep : [list]
+        list of all independant varables
+    constants : [list]
+        list with all constants
+
+    Returns
+    -------
+    [dict]
+        empty dictionary where the keys are the possible factorizable
+        terms for the determining equations.
+    """
     S = str(XF.expand())
     S = S.replace(' ', '')
     S = re.sub(r'\*{2}', "&", S)
@@ -121,17 +141,19 @@ def get_common_factors(XF, list_dep, list_indep, constants):
 
 
 def key_ordering(keys):
-    """
+    """Giving a list of strings it organized in a way
+    that the each element is not completely inside 
+    one of the following terms in the list.
 
     Parameters
     ----------
-    keys : [type]
-        [description]
+    keys : [list]
+        list of no repeated strings
 
     Returns
     -------
-    [type]
-        [description]
+    [list]
+        list with the elements in order
     """
     keys_order = []
     while len(keys_order) < len(keys):
@@ -148,6 +170,25 @@ def key_ordering(keys):
 
 
 def get_det_eqns(XF, dict_det_eqn):
+    """This function gives the determinant equations
+    in a string format
+
+    Parameters
+    ----------
+    XF : [sp.add]
+        symbolic representation of the Lie operator acting 
+        over the differential equation. At this step XF already
+        used the rules array. 
+    dict_det_eqn : [dict]
+        dictionary with all the derivatives terms in XF
+
+    Returns
+    -------
+    [dict]
+        dictionary with the string version of the determinant 
+        equations. Each key has the information of the 
+        term that was grouped by and equated to zero. 
+    """
     S = str(XF.expand())
     S = S.replace(' ', '')
     XF_string = re.sub(r'\^', "", S)
@@ -161,6 +202,24 @@ def get_det_eqns(XF, dict_det_eqn):
 
 
 def group_terms(dict_det_eqn, XF_terms):
+    """This function implements the logic to find terms specified
+    in dict_det_eqn and group them in that dictionary.
+
+    Parameters
+    ----------
+    dict_det_eqn : [dict]
+        dictionary where each key has the terms to group by. Each 
+        key is a string.
+    XF_terms : [list]
+        list of strings where each element is an element of the 
+        expanded version an equation.
+
+    Returns
+    -------
+    [dict]
+        dictionary where in each value contains the factorized terms
+        according to the given keys. 
+    """
     for key in dict_det_eqn.keys():
         dict_det_eqn[key] = []
     lonely_terms = []
@@ -202,6 +261,26 @@ def group_terms(dict_det_eqn, XF_terms):
 
 
 def str_eqn_to_dict_eqn(dict_det_eqn, list_var, list_all):
+    """This function transforms the string version of the 
+    determinant equations to dictionary format.
+
+    Parameters
+    ----------
+    dict_det_eqn : [dict]
+        dictionary containing all the determinant equations
+    list_var : [list]
+        list with all the variables
+    list_all : [list]
+        list with all the variables and constants (constants
+        go first).
+
+    Returns
+    -------
+    [dict]
+        a dictionary of lists where each element of the list is 
+        another dictionary with the information of each term 
+        of the determining equations of the system. 
+    """
     det_eqn = []
     for eqn in dict_det_eqn.values():
         aux_list = []
@@ -219,8 +298,32 @@ def str_eqn_to_dict_eqn(dict_det_eqn, list_var, list_all):
 
 
 def str_to_dict(f, term, arr_pow, arr_deriv, list_all, list_var):
-    '''
-    '''
+    """Returns a dictionary that saves all the information of a 
+    symbolic expresion in a determining equation.
+
+    Parameters
+    ----------
+    f : [simpy expression]
+        A simbolic expresion to analyze
+    term : [dict]
+        dictionary containing all the information of the term
+    arr_pow : [numpy array]
+        array with the power of each constant or variable
+        multiplying the term.
+    arr_deriv : [numpy array]
+        array with the order of the derivative with respect to
+         the variables in list_var
+    list_all : [list]
+        list with all constants and variables. Constants go first
+    list_var : [list]
+        list with all dependant and independant variables. 
+
+    Returns
+    -------
+    [dict]
+        dictionary with the information of the symbolic term in 
+        a determining equation. 
+    """
     if f.is_Mul:
         for i in f.args:
             arr = str_to_dict(i, term, arr_pow, arr_deriv, list_all, list_var)

@@ -4,5 +4,17 @@
     ["hey", "hey no", "no", "you", "yourself"],
     "result":
     ["hey no", "no", "yourself", "hey", "you"]
+    },
+    {
+    "original":
+    ["daniel", "torres", "daniel torres", "dan", "dd"],
+    "result":
+    ["daniel torres", "dd", "daniel", "torres", "dan"]
+    },
+    {
+    "original":
+    ["a", "ab", "abc", "abcd", "abcde"],
+    "result":
+    ["abcde", "abcd", "abc", "ab", "a"]
     }
- ]
+]
