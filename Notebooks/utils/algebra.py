@@ -126,7 +126,7 @@ def get_common_factors(XF, list_dep, list_indep, constants):
         S = re.sub(f'(?<!\(|,){var}', "", S)
     constants_str = [str(ele).replace(' ', '') for ele in constants]
     for cte in constants_str:
-        S = re.sub(f'\**{cte}\**', "", S)
+        S = re.sub(f'{cte}', "", S)
     S = re.sub(r'#', "Derivative", S)
     S = re.sub(r'\&', "^", S)
     S = re.sub(r'\*(?=[\+\-])', "", S)
@@ -234,6 +234,8 @@ def group_terms(dict_det_eqn, XF_terms):
                                                    '', dict_det_eqn[key][-1])
                     dict_det_eqn[key][-1] = re.sub(r'(?<=\d|\))\*+',
                                                    '*', dict_det_eqn[key][-1])
+                    dict_det_eqn[key][-1] = re.sub(r'\*\*+',
+                                                   '*', dict_det_eqn[key][-1])
                     if dict_det_eqn[key][-1][-1] == "*":
                         dict_det_eqn[key][-1] = dict_det_eqn[key][-1][:-1]
                     add = True
@@ -252,6 +254,10 @@ def group_terms(dict_det_eqn, XF_terms):
                                                    '', dict_det_eqn[key][-1])
                     dict_det_eqn[key][-1] = re.sub(r'(?<=\d)\*+',
                                                    '*', dict_det_eqn[key][-1])
+                    dict_det_eqn[key][-1] = re.sub(r'\*\*+',
+                                                   '*', dict_det_eqn[key][-1])
+                    if dict_det_eqn[key][-1][-1] == "*":
+                        dict_det_eqn[key][-1] = dict_det_eqn[key][-1][:-1]
                     add = True
                     break
         if not add:
@@ -284,7 +290,6 @@ def str_eqn_to_dict_eqn(dict_det_eqn, list_var, list_all):
     det_eqn = []
     for eqn in dict_det_eqn.values():
         aux_list = []
-        print(eqn)
         for str_term in eqn:
             arr_pow = np.zeros(len(list_all))
             arr_deriv = np.zeros(len(list_var))
@@ -417,3 +422,42 @@ def simplify_redundant_eqn(det_eqns):
     for idx in zero_terms:
         simplify_det_eqns[idx] = [zero_terms[idx]]
     return simplify_det_eqns
+
+def simplify_redundant_eqn_second_phase(det_eqn):
+    for idx, eqn in det_eqn.items():
+        det_eqn[idx] = de.drop_constants(eqn)
+    return det_eqn
+
+def drop_constants(eqn):
+    """If a term has the same constants it drops them.
+
+    Parameters
+    ----------
+    eqn : [list]
+        list containing all terms
+
+    Returns
+    -------
+    [list]
+        A list containing all terms but without the constants
+        multiplying the whole equation. 
+    """
+    equal_terms = True
+    equal_constants = True
+    terms_info = eqn[0]["constants"]
+    coeff_info = [abs(eqn[0]["coefficient"]), eqn[0]["constants"]]
+    for term in eqn:
+        if coeff_info != \
+                [abs(term["coefficient"]), term["constants"]]:
+            equal_terms = False
+        if terms_info != term["constants"]:
+            equal_constants = False
+            return eqn
+    if equal_constants:
+        N = len(eqn[0]["constants"])
+        for i in range(len(eqn)):
+            if equal_terms:
+                eqn[i]["coefficient"] = int(eqn[i]["coefficient"]
+                                            / abs(eqn[i]["coefficient"]))
+            eqn[i]["constants"] = [0 for i in range(N)]
+    return eqn
