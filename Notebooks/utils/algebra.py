@@ -363,12 +363,19 @@ def str_to_dict(f, term, arr_pow, arr_deriv, list_all, list_var):
                                    list_var[0], list_var[0])):
             s = str(f)
             if s.endswith('))'):
-                subs = re.split(',', s)[-3].strip(' ')
-                subs_t = re.split(',', s)[-2] + ',' + re.split(',', s)[-1]
-                subs_t = subs_t[:-1].strip(' ')
+                if '(' in re.split(',', s)[-1]:
+                    subs = re.split(',',s)[-2].strip(' ')
+                    subs_t = re.split(',',s)[-1].strip(')').strip(' ')    # Changed
+                    subs_t = subs_t + ')'
+                else:
+                    subs = re.split(',', s)[-3].strip(' ')
+                    subs_t = re.split(',', s)[-2] + ',' + re.split(',', s)[-1]
+                    subs_t = subs_t[:-1].strip(' ')
             else:
                 subs = re.split(',',s)[-2].strip(' ')
                 subs_t = re.split(',',s)[-1].strip(')').strip(' ')
+            if ')' in subs:
+                subs = subs.strip(')')
             s = s.replace(subs, subs_t)
             f = sp.sympify(parens(s).strip('('))
             if isinstance(f, tuple):
