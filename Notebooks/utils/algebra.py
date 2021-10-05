@@ -473,26 +473,4 @@ def drop_constants(eqn):
                                             / abs(eqn[i]["coefficient"]))
             eqn[i]["constants"] = [0 for i in range(N)]
     return eqn
-
-def str_eqn_to_dict_eqn_2(dict_det_eqn, list_var, list_all):
-    """This function transforms the string version of the 
-    determinant equations to dictionary format.
-
-    Parameters
-    ----------
-    dict_det_eqn : [dict]
-        dictionary containing all the determinant equations
-    list_var : [list]
-        list with all the variables
-    list_all : [list]
-        list with all the variables and constants (constants
-        go first).
-
-    Returns
-    -------
-    [dict]
-        a dictionary of lists where each element of the list is 
-        another dictionary with the information of each term 
-        of the determining equations of the system. 
-    """
     
