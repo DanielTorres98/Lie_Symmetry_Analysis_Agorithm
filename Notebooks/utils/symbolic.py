@@ -203,8 +203,8 @@ def group_operator(F, variables, infts):
     var_inft = zip(variables, infts)
     LF = 0
     for var, inft in var_inft:
-        LF += sp.simplify(inft*D(F, var))
-    return LF
+        LF += inft*D(F, var)
+    return sp.simplify(LF)
 
 def der_relabel(dep_vars_derivatives, F):
     """Given list of derivatives it changes the
@@ -267,7 +267,7 @@ def subs_new_vars(new_labeling, previous_labeling, F):
                             previous_labeling)
 
     for new, old in new_old_names:
-        F = F.subs({old:new})
+        F = F.xreplace({old: new})
     new_labeling.reverse()
     previous_labeling.reverse()
     return F
@@ -283,4 +283,147 @@ def deriv_infts(infts, variables, order):
             deriv_infts.append(inft_aux) 
     return deriv_infts
 
+def Diff(f, y_var, x_var, order):
+    dy = D(y_var, x_var).expand()
+    Df = D(f, x_var).expand()
+    for o in range(order):
+        Df += dy*D(f, y_var)
+        Df = Df.expand()
+        y_var = dy
+        dy = D(y_var, x_var).expand()
+    return Df
 
+def higher_infinitesimals_generator_2(list_inft_indep, list_inft,
+                                    order, list_indep, list_dep):
+    """This funtions applies the logic to get the infintesimals
+       of the derivatives.
+
+    Parameters
+    ----------
+    list_inft_indep : [list]
+        list of the infinitesimals of the independent variables
+    list_inft : [list]
+        list of the infinitesimals of the dependent variables
+    order : [int]
+        higher order involved in the system of differential equations
+    list_indep : [list]
+        list with the independant variables
+    list_dep : [type]
+        list with the dependant variables
+
+    Returns
+    -------
+    [lists]
+        A list with all possible derivatives of the dependant
+        variables and a list with the respective infinitesimals.
+    """
+    dep_vars_derivatives = []
+    deriv_infts = []
+    var_combinatorics = list_combinatorics(list_indep, order)
+    for deriv_vars_order in var_combinatorics:
+        aux_list_deriv = []
+        aux_list_inft = []
+        for idx_2 in range(len(list_dep)):
+            if len(deriv_vars_order) == 1:
+                y_aux = list_dep[idx_2]
+                x_aux =  deriv_vars_order[0]
+                eta_aux = list_inft[idx_2]
+            else:
+                idx_1 = var_combinatorics.index(deriv_vars_order[:-1])
+                y_aux = dep_vars_derivatives[idx_1][idx_2]
+                x_aux = deriv_vars_order[-1]
+                eta_aux = deriv_infts[idx_1][idx_2]
+            aux_list_deriv.append(D(y_aux, x_aux))
+            eta_aux = eta_aux.diff(x_aux)           
+            for i in range(len(list_indep)):
+                eta_aux -= D(y_aux, list_indep[i])*(
+                    list_inft_indep[i].diff(x_aux))
+            aux_list_inft.append(eta_aux)
+        dep_vars_derivatives.append(aux_list_deriv)
+        deriv_infts.append(aux_list_inft)
+    return deriv_infts, dep_vars_derivatives
+
+def sym_det_eqn(det_eqn, list_indep, list_dep, constants):
+    """Gives the symbolic version of remaining
+       determining equation.
+
+       Args:
+       det_eqn (dict): dictionary will all the
+                       determining equations. 
+    """
+    var_dict = {}
+    var_list = list_indep + list_dep
+    indep_var_str = [str(ele).replace(' ', '') for ele in list_indep]
+    for dep_var in indep_var_str:
+        v = dep_var.split('(')[0]
+        if len(v) > 1:
+            var_dict[f'xi{v}'] = 'eta^' + \
+                '(' + "\\" + v + ')'
+        else:
+            var_dict[f'xi{v}'] = f'xi^({v})'
+    dep_var_str = [str(ele).replace(' ', '') for ele in list_dep]
+    for dep_var in dep_var_str:
+        v = dep_var.split('(')[0]
+        if len(v) > 1:
+            var_dict[f'eta{v}'] = 'eta^' + \
+                '(' + "\\" + v + ')'
+        else:
+            var_dict[f'eta{v}'] = f'eta^({v})'
+    M = sp.Matrix([[]])
+    i = 1
+    for eqn in det_eqn.values():
+        M = M.row_insert(i-1, sp.Matrix([[i,
+                                       sp.Eq(get_symbolic_terms(
+                                           eqn, var_dict, constants, var_list), 0)
+                                       ]]))
+        i += 1
+    return M
+
+
+def get_symbolic_terms(eqn, var_dict, list_cte, var_list):
+    """given a list of dictionaries with the
+       information of each term, retuns the 
+       symbolic equivalent.
+
+       Args:
+       eqn (list): list of dictionaries 
+    """
+    # sym_cte_list = []
+    # for idx in range(len(var_list)):
+    #     sym_cte_list.append(sp.symbols(var_list[idx]))
+    # for idx in range(len(constants) - len(var_list)):
+    #     sym_cte_list.append(sp.symbols('alpha_' + str(idx)))
+    sym_cte_list = list_cte + var_list
+    A = 0
+    for term in eqn:
+        one_term = False
+        if len(eqn) == 1:
+            one_term = True
+        A += dict_to_symb(term, var_dict, var_list,
+                             sym_cte_list, one_term)
+    return A
+
+def dict_to_symb(term, var_dict, var_list,
+                 sym_cte_list, one_term):
+    """Given a dictionary it returns the symbolic
+       equivalent. It drops all constants if it is 
+       just one term.
+
+        Args:
+        eqn (dict): dictionary with the information of
+                    the term.
+    """
+    var = var_dict[term['variable']]
+    list_devs = term['derivatives']
+    cte_power = zip(sym_cte_list, term['constants'])
+    var_list_str = [str(ele).split('(')[0] for ele in var_list]
+    a = 1
+    if one_term:
+        coeff = 1
+    else:
+        for cte, n in cte_power:
+            a *= cte**n
+        coeff = term['coefficient']
+    D = take_derivative(list_devs, var, var_list_str)
+    sym_term = coeff*a*D
+    return sym_term
