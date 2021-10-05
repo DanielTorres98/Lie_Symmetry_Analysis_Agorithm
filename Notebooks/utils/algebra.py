@@ -115,18 +115,18 @@ def get_common_factors(XF, list_dep, list_indep, constants):
     S = re.sub(r'\*{2}', "&", S)
     S = re.sub(r'Subs\(Derivative\([(eta)(xi)\^][\w\(,\)\^]*\&*\d*', "", S)
     S = re.sub(r'Derivative\([(eta)(xi)\^][\w\(,\)\^]*\&*\d*', "", S)
-    S = re.sub(r'[(eta)(xi)]+\^[\w\(,\)\^]+', "", S)
+    S = re.sub(r'[(eta)(xi)]+\^[\w\(,\)\^]+\**', "", S)
     S = re.sub(r'Derivative', "#", S)
     dep_var_str = [str(ele).replace(' ', '') for ele in list_dep]
     for var in dep_var_str:
         var = var.replace("(", "\(").replace(")", "\)")
-        S = re.sub(f'(?<!\(|,){var}', "", S)
+        S = re.sub(f'(?<!\(|,){var}\&*\d*', "", S)
     indep_var_str = [str(ele).replace(' ', '') for ele in list_indep]
     for var in indep_var_str:
-        S = re.sub(f'(?<!\(|,){var}', "", S)
+        S = re.sub(f'(?<!\(|,){var}\&*\d*', "", S)
     constants_str = [str(ele).replace(' ', '') for ele in constants]
     for cte in constants_str:
-        S = re.sub(f'{cte}', "", S)
+        S = re.sub(f'{cte}\&*\d*', "", S)
     S = re.sub(r'#', "Derivative", S)
     S = re.sub(r'\&', "^", S)
     S = re.sub(r'\*(?=[\+\-])', "", S)
@@ -161,7 +161,12 @@ def key_ordering(keys):
             inside = False
             for key_2 in keys:
                 if key_2 != key_1 and (key_2 not in keys_order):
-                    if key_1 in key_2:
+                    k1 = key_1.split("*")
+                    counter = 0
+                    for k in k1:
+                        if k in key_2:
+                            counter += 1
+                    if counter == len(k1):
                         inside = True
                         break
             if not inside and key_1 not in keys_order:
@@ -250,7 +255,7 @@ def group_terms(dict_det_eqn, XF_terms):
                     for f in factors:
                         element = element.replace(f, '')
                     dict_det_eqn[key].append(element)
-                    dict_det_eqn[key][-1] = re.sub(r'(?<=[\+\-\)])\*+',
+                    dict_det_eqn[key][-1] = re.sub(r'(?<=[\+\-])\*+',
                                                    '', dict_det_eqn[key][-1])
                     dict_det_eqn[key][-1] = re.sub(r'(?<=\d)\*+',
                                                    '*', dict_det_eqn[key][-1])
@@ -363,12 +368,19 @@ def str_to_dict(f, term, arr_pow, arr_deriv, list_all, list_var):
                                    list_var[0], list_var[0])):
             s = str(f)
             if s.endswith('))'):
-                subs = re.split(',', s)[-3].strip(' ')
-                subs_t = re.split(',', s)[-2] + ',' + re.split(',', s)[-1]
-                subs_t = subs_t[:-1].strip(' ')
+                if '(' in re.split(',', s)[-1]:
+                    subs = re.split(',',s)[-2].strip(' ')
+                    subs_t = re.split(',',s)[-1].strip(')').strip(' ')    # Changed
+                    subs_t = subs_t + ')'
+                else:
+                    subs = re.split(',', s)[-3].strip(' ')
+                    subs_t = re.split(',', s)[-2] + ',' + re.split(',', s)[-1]
+                    subs_t = subs_t[:-1].strip(' ')
             else:
                 subs = re.split(',',s)[-2].strip(' ')
                 subs_t = re.split(',',s)[-1].strip(')').strip(' ')
+            if ')' in subs:
+                subs = subs.strip(')')
             s = s.replace(subs, subs_t)
             f = sp.sympify(parens(s).strip('('))
             if isinstance(f, tuple):
@@ -461,3 +473,4 @@ def drop_constants(eqn):
                                             / abs(eqn[i]["coefficient"]))
             eqn[i]["constants"] = [0 for i in range(N)]
     return eqn
+    
