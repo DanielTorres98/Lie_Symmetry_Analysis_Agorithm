@@ -133,6 +133,8 @@ def get_common_factors(XF, list_dep, list_indep, constants):
     S = re.sub(r'(?<!\^)\d+\*', '', S)
     S = re.sub(r'(?<=[\+\-])\*+', "", S)
     S = re.sub(r'\*+', "*", S)
+    if S[0] == '*':
+        S = S[1:]
     keys = re.split('\+|\-', S)
     keys = list(dict.fromkeys(keys))
     if '' in keys:
