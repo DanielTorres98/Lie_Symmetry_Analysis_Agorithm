@@ -476,25 +476,41 @@ def drop_constants(eqn):
             eqn[i]["constants"] = [0 for i in range(N)]
     return eqn
 
-def str_eqn_to_dict_eqn_2(dict_det_eqn, list_var, list_all):
-    """This function transforms the string version of the 
-    determinant equations to dictionary format.
+def simplify_redundant_eqn_second_phase(det_eqn):
+    for idx, eqn in det_eqn.items():
+        det_eqn[idx] = drop_constants(eqn)
+    return det_eqn
+    
+def drop_constants(eqn):
+    """If a term has the same constants it drops them.
 
     Parameters
     ----------
-    dict_det_eqn : [dict]
-        dictionary containing all the determinant equations
-    list_var : [list]
-        list with all the variables
-    list_all : [list]
-        list with all the variables and constants (constants
-        go first).
+    eqn : [list]
+        list containing all terms
 
     Returns
     -------
-    [dict]
-        a dictionary of lists where each element of the list is 
-        another dictionary with the information of each term 
-        of the determining equations of the system. 
+    [list]
+        A list containing all terms but without the constants
+        multiplying the whole equation. 
     """
-    
+    equal_terms = True
+    equal_constants = True
+    terms_info = eqn[0]["constants"]
+    coeff_info = [abs(eqn[0]["coefficient"]), eqn[0]["constants"]]
+    for term in eqn:
+        if coeff_info != \
+                [abs(term["coefficient"]), term["constants"]]:
+            equal_terms = False
+        if terms_info != term["constants"]:
+            equal_constants = False
+            return eqn
+    if equal_constants:
+        N = len(eqn[0]["constants"])
+        for i in range(len(eqn)):
+            if equal_terms:
+                eqn[i]["coefficient"] = int(eqn[i]["coefficient"]
+                                            / abs(eqn[i]["coefficient"]))
+            eqn[i]["constants"] = [0 for i in range(N)]
+    return eqn
