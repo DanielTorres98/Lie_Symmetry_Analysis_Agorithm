@@ -295,7 +295,9 @@ def str_eqn_to_dict_eqn(dict_det_eqn, list_var, list_all):
     det_eqn = []
     for eqn in dict_det_eqn.values():
         aux_list = []
+        print(eqn)
         for str_term in eqn:
+            print(str_term)
             arr_pow = np.zeros(len(list_all))
             arr_deriv = np.zeros(len(list_var))
             term = {"coefficient": 1, "constants": None,
@@ -473,4 +475,5 @@ def drop_constants(eqn):
                                             / abs(eqn[i]["coefficient"]))
             eqn[i]["constants"] = [0 for i in range(N)]
     return eqn
+
     
