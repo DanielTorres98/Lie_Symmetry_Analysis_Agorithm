@@ -475,3 +475,5 @@ def drop_constants(eqn):
                                             / abs(eqn[i]["coefficient"]))
             eqn[i]["constants"] = [0 for i in range(N)]
     return eqn
+
+    
