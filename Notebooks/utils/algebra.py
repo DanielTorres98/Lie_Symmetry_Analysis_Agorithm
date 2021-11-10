@@ -133,6 +133,8 @@ def get_common_factors(XF, list_dep, list_indep, constants):
     S = re.sub(r'(?<!\^)\d+\*', '', S)
     S = re.sub(r'(?<=[\+\-])\*+', "", S)
     S = re.sub(r'\*+', "*", S)
+    if S[0] == '*':
+        S = S[1:]
     keys = re.split('\+|\-', S)
     keys = list(dict.fromkeys(keys))
     if '' in keys:
@@ -295,9 +297,7 @@ def str_eqn_to_dict_eqn(dict_det_eqn, list_var, list_all):
     det_eqn = []
     for eqn in dict_det_eqn.values():
         aux_list = []
-        print(eqn)
         for str_term in eqn:
-            print(str_term)
             arr_pow = np.zeros(len(list_all))
             arr_deriv = np.zeros(len(list_var))
             term = {"coefficient": 1, "constants": None,
@@ -476,4 +476,41 @@ def drop_constants(eqn):
             eqn[i]["constants"] = [0 for i in range(N)]
     return eqn
 
+def simplify_redundant_eqn_second_phase(det_eqn):
+    for idx, eqn in det_eqn.items():
+        det_eqn[idx] = drop_constants(eqn)
+    return det_eqn
     
+def drop_constants(eqn):
+    """If a term has the same constants it drops them.
+
+    Parameters
+    ----------
+    eqn : [list]
+        list containing all terms
+
+    Returns
+    -------
+    [list]
+        A list containing all terms but without the constants
+        multiplying the whole equation. 
+    """
+    equal_terms = True
+    equal_constants = True
+    terms_info = eqn[0]["constants"]
+    coeff_info = [abs(eqn[0]["coefficient"]), eqn[0]["constants"]]
+    for term in eqn:
+        if coeff_info != \
+                [abs(term["coefficient"]), term["constants"]]:
+            equal_terms = False
+        if terms_info != term["constants"]:
+            equal_constants = False
+            return eqn
+    if equal_constants:
+        N = len(eqn[0]["constants"])
+        for i in range(len(eqn)):
+            if equal_terms:
+                eqn[i]["coefficient"] = int(eqn[i]["coefficient"]
+                                            / abs(eqn[i]["coefficient"]))
+            eqn[i]["constants"] = [0 for i in range(N)]
+    return eqn

@@ -85,3 +85,57 @@ def latex_derivative(list_devs, var, var_list):
                     var_str = var_str + '_' + '{' + v
     var = var_str + '}'
     return var
+
+def latex_eqn_code(eqn, var_dict, var_list, constants):
+    """This code generates the latex string format of 
+    the determinant equations
+
+    Parameters
+    ----------
+    eqn : [dictionary]
+        dictionary containing all the determinant eqautions
+    var_dict : [dictionary]
+        dictionary mapping the name of the variable to it's 
+        latex code 
+    var_list : [list]
+        list with all independant and dependant variables in
+        string format
+    constants : [list]
+        list containing all constants
+
+    Returns
+    -------
+    [string]
+        returns a single string with  all the equations 
+        typed in latex format
+    """
+    sym_cte_list = []
+    for idx in range(len(var_list)):
+        sym_cte_list.append(var_list[idx])
+    for idx in range(len(constants) - len(var_list)):
+        sym_cte_list.append('alpha_' + str(idx))
+    A = ''
+    for term in eqn:
+        one_term = False
+        if len(eqn) == 1:
+            one_term = True
+        A = A + dict_to_latex(term, var_dict, var_list,
+                                 sym_cte_list, one_term) + '+'
+    A = A[:-1]
+    A = A + '=0'
+    return A
+
+
+def latex_det_eqn(det_eqn, var_dict, var_list, constants):
+    """Gives the latex code version of remaining
+       determining equation.
+
+       Args:
+       det_eqn (dict): dictionary will all the
+                       determining equations. 
+    """
+    latex_code = ''
+    for eqn in det_eqn.values():
+        latex_code = latex_code + latex_eqn_code(eqn,
+                                                 var_dict, var_list, constants) + "\\" + "\\" + "\n"
+    return latex_code
