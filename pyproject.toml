@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=45", "wheel", "setuptools-scm>=6.2"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools_scm]
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "-ra -q"
+pythonpath = [
+  "src"
+]
+testpaths = [
+    "tests"
+]
+norecursedirs = "src/Lie_Symmetry_Analysis_Algorithm/*"
+markers = [
+    "manual",
+]

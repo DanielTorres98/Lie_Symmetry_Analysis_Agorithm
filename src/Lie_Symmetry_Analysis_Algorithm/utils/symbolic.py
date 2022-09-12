@@ -149,7 +149,7 @@ def higher_infinitesimals_generator(list_inft_indep, list_inft,
         higher order involved in the system of differential equations
     list_indep : [list]
         list with the independant variables
-    list_dep : [type]
+    list_dep : [list]
         list with the dependant variables
 
     Returns

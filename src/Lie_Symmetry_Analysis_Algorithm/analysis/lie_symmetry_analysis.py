@@ -13,12 +13,12 @@ def point_symmetries(F, order, F_rules_array, list_indep, list_dep, list_cte, la
     list_var = list_indep + list_dep
     list_all = list_cte + list_indep + list_dep
     latex_dict = {}
-   # for i in range(0, N_indep):
-   #     if len(var_list[i]) > 1:
-   #         latex_dict['xse' + str(i+1)] = 'xi^' + \
-   #             '{' + "\\" + var_list[i] + '}'
-   #     else:
-   #         latex_dict['xse' + str(i+1)] = 'xi^' + "{" + var_list[i] + '}'
+    # for i in range(0, N_indep):
+    #     if len(var_list[i]) > 1:
+    #         latex_dict['xse' + str(i+1)] = 'xi^' + \
+    #             '{' + "\\" + var_list[i] + '}'
+    #     else:
+    #         latex_dict['xse' + str(i+1)] = 'xi^' + "{" + var_list[i] + '}'
     infts = infinitesimals_generator(list_indep, list_dep)
     n_indep = len(list_indep)
     n_dep = len(list_dep)
