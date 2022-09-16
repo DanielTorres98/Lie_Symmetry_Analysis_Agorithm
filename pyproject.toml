@@ -13,7 +13,7 @@ pythonpath = [
 testpaths = [
     "tests"
 ]
-norecursedirs = "src/Lie_Symmetry_Analysis_Algorithm/*"
+norecursedirs = "src/symmetries/*"
 markers = [
     "manual",
 ]
