@@ -1,6 +1,6 @@
 import sympy as sp
 from sympy import Derivative as D
-from utils.combinatorics import list_combinatorics
+from combinatorics import list_combinatorics
 
 
 def symbolic_derivative(list_devs, var, var_list):
