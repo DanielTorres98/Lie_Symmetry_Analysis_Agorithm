@@ -2,7 +2,7 @@ import copy
 import re
 
 import numpy as np
-import sympy as sp
+import sympy
 
 
 def is_zero(zero_term, term):
@@ -11,16 +11,16 @@ def is_zero(zero_term, term):
 
     Parameters
     ----------
-    zero_term : [dict]
+    zero_term : dict
         a dictionary containing the
         information of the zero term
-    term : [dict]
+    term : dict
         a dictionary containing the
         information of the term
 
     Returns
     -------
-    [boolean]
+    boolean
         Returns True if the term is zero as well, False
         otherwise.
     """
@@ -28,64 +28,60 @@ def is_zero(zero_term, term):
         compare_derivatives(zero_term['derivatives'], term['derivatives'])
 
 
-def compare_derivatives(D1, D2):
-    """Given to lists with the information of the derivatives
-       tells if the second term contains a derivative equal 
-       or higher order for all possible derivatives.
+def compare_derivatives(der_1:list, der_2:list)-> bool:
+    """Given to lists with the information of the derivatives tells if the second term contains a
+     derivative equal or higher order for all possible derivatives.
 
     Parameters
     ----------
-    D1 : [list]
+    der_1 : list
         list of the order of derivatives
         for each variable for term 1.
-    D2 : [list]
+    der_2 : list
         list of the order of derivatives
         for each variable for term 1.
 
     Returns
     -------
-    [Boolean]
+    Boolean
         Returns False if at least one derivative in D2 is
         of a lower order than in D1. Returns True otherwise.
     """
-    D1D2 = zip(D1, D2)
-    for d1, d2 in D1D2:
-        if d2 < d1:
+    for d_1, d_2 in zip(der_1, der_2):
+        if d_2 < d_1:
             return False
     return True
 
 
-def drop_constants(eqn):
+def drop_constants(eqn: list[dict]):
     """If a term has the same constants it drops them.
 
     Parameters
     ----------
-    eqn : [list]
-        list containing all terms
+    eqn : list
+        dict containing all terms
 
     Returns
     -------
-    [list]
-        A list containing all terms but without the constants
-        multiplying the whole equation. 
+    list
+        A list containing all terms but without the constants multiplying the whole equation.
     """
     equal_terms = True
     equal_constants = True
     terms_info = eqn[0]["constants"]
     coeff_info = [abs(eqn[0]["coefficient"]), eqn[0]["constants"]]
+
     for term in eqn:
-        if coeff_info != \
-                [abs(term["coefficient"]), term["constants"]]:
+        if coeff_info != [abs(term["coefficient"]), term["constants"]]:
             equal_terms = False
         if terms_info != term["constants"]:
             equal_constants = False
+
     if equal_constants:
-        N = len(eqn[0]["constants"])
-        for i in range(len(eqn)):
+        for i, _ in enumerate(eqn):
             if equal_terms:
-                eqn[i]["coefficient"] = int(eqn[i]["coefficient"]
-                                            / abs(eqn[i]["coefficient"]))
-            eqn[i]["constants"] = [0 for i in range(N)]
+                eqn[i]["coefficient"] = int(eqn[i]["coefficient"]/ abs(eqn[i]["coefficient"]))
+            eqn[i]["constants"] = [0 ]*len(eqn[0]["constants"])
     return eqn
 
 
@@ -95,18 +91,18 @@ def get_common_factors(XF, list_dep, list_indep, constants):
 
     Parameters
     ----------
-    XF : [symbolic expresion]
+    XF : symbolic expresion
         The Lie operator acting over a differential equation F.
-    list_dep : [list]
+    list_dep : list
         list with all dependant variables
-    list_indep : [list]
+    list_indep : list
         list of all independant varables
-    constants : [list]
+    constants : list
         list with all constants
 
     Returns
     -------
-    [dict]
+    dict
         empty dictionary where the keys are the possible factorizable
         terms for the determining equations.
     """
@@ -143,18 +139,17 @@ def get_common_factors(XF, list_dep, list_indep, constants):
 
 
 def key_ordering(keys):
-    """Giving a list of strings it organized in a way
-    that the each element is not completely inside 
-    one of the following terms in the list.
+    """Giving a list of strings it organized in a way that the each element is not completely
+    inside one of the following terms in the list.
 
     Parameters
     ----------
-    keys : [list]
+    keys : list
         list of no repeated strings
 
     Returns
     -------
-    [list]
+    list
         list with the elements in order
     """
     keys_order = []
@@ -182,19 +177,17 @@ def get_det_eqns(XF, dict_det_eqn):
 
     Parameters
     ----------
-    XF : [sp.add]
-        symbolic representation of the Lie operator acting 
-        over the differential equation. At this step XF already
-        used the rules array. 
-    dict_det_eqn : [dict]
+    XF : sp.add
+        symbolic representation of the Lie operator acting over the differential equation. At this
+        step XF already used the rules array.
+    dict_det_eqn : dict
         dictionary with all the derivatives terms in XF
 
     Returns
     -------
-    [dict]
-        dictionary with the string version of the determinant 
-        equations. Each key has the information of the 
-        term that was grouped by and equated to zero. 
+    dict
+        dictionary with the string version of the determinant equations. Each key has the
+        information of the term that was grouped by and equated to zero.
     """
     S = str(XF.expand())
     S = S.replace(' ', '')
@@ -214,18 +207,15 @@ def group_terms(dict_det_eqn, XF_terms):
 
     Parameters
     ----------
-    dict_det_eqn : [dict]
-        dictionary where each key has the terms to group by. Each 
-        key is a string.
-    XF_terms : [list]
-        list of strings where each element is an element of the 
-        expanded version an equation.
+    dict_det_eqn : dict
+        dictionary where each key has the terms to group by. Each key is a string.
+    XF_terms : list
+        list of strings where each element is an element of the expanded version an equation.
 
     Returns
     -------
-    [dict]
-        dictionary where in each value contains the factorized terms
-        according to the given keys. 
+    dict
+        dictionary where in each value contains the factorized terms according to the given keys.
     """
     for key in dict_det_eqn.keys():
         dict_det_eqn[key] = []
@@ -274,25 +264,24 @@ def group_terms(dict_det_eqn, XF_terms):
 
 
 def str_eqn_to_dict_eqn(dict_det_eqn, list_var, list_all):
-    """This function transforms the string version of the 
-    determinant equations to dictionary format.
+    """This function transforms the string version of the determinant equations to dictionary
+    format.
 
     Parameters
     ----------
-    dict_det_eqn : [dict]
+    dict_det_eqn : dict
         dictionary containing all the determinant equations
-    list_var : [list]
+    list_var : list
         list with all the variables
-    list_all : [list]
+    list_all : list
         list with all the variables and constants (constants
         go first).
 
     Returns
     -------
-    [dict]
-        a dictionary of lists where each element of the list is 
-        another dictionary with the information of each term 
-        of the determining equations of the system. 
+    dict
+        a dictionary of lists where each element of the list is another dictionary with the
+        information of each term of the determining equations of the system.
     """
     det_eqn = []
     for eqn in dict_det_eqn.values():
@@ -302,7 +291,7 @@ def str_eqn_to_dict_eqn(dict_det_eqn, list_var, list_all):
             arr_deriv = np.zeros(len(list_var))
             term = {"coefficient": 1, "constants": None,
                     "derivatives": None, "variable": None}
-            aux_list.append(str_to_dict(sp.sympify(str_term), term, arr_pow,
+            aux_list.append(str_to_dict(sympy.sympify(str_term), term, arr_pow,
                   arr_deriv, np.array(list_all), np.array(list_var)))
         det_eqn.append(aux_list)
     keys = list(np.arange(len(det_eqn)))
@@ -310,31 +299,30 @@ def str_eqn_to_dict_eqn(dict_det_eqn, list_var, list_all):
 
 
 def str_to_dict(f, term, arr_pow, arr_deriv, list_all, list_var):
-    """Returns a dictionary that saves all the information of a 
-    symbolic expresion in a determining equation.
+    """Returns a dictionary that saves all the information of a symbolic expresion in a
+    determining equation.
 
     Parameters
     ----------
-    f : [simpy expression]
+    f : simpy expression
         A simbolic expresion to analyze
-    term : [dict]
+    term : dict
         dictionary containing all the information of the term
-    arr_pow : [numpy array]
+    arr_pow : numpy array
         array with the power of each constant or variable
         multiplying the term.
-    arr_deriv : [numpy array]
+    arr_deriv : numpy array
         array with the order of the derivative with respect to
          the variables in list_var
-    list_all : [list]
+    list_all : list
         list with all constants and variables. Constants go first
-    list_var : [list]
-        list with all dependant and independant variables. 
+    list_var : list
+        list with all dependant and independant variables.
 
     Returns
     -------
-    [dict]
-        dictionary with the information of the symbolic term in 
-        a determining equation. 
+    dict
+        dictionary with the information of the symbolic term in a determining equation.
     """
     if f.is_Mul:
         for i in f.args:
@@ -359,15 +347,14 @@ def str_to_dict(f, term, arr_pow, arr_deriv, list_all, list_var):
             var = f.args[0]
             if var.is_Derivative:
                 term['variable'] = var.args[0]
-                for v in var.args[1:]:
-                    idx = np.where(list_var == v[0])
-                    arr_deriv[idx] = v[1]
+                for var in var.args[1:]:
+                    idx = np.where(list_var == var[0])
+                    arr_deriv[idx] = var[1]
             else:
                 idx = np.where(list_all == f.args[0])
                 arr_pow[idx] = f.args[1]
 
-        if type(f) == type(sp.Subs(list_var[0],
-                                   list_var[0], list_var[0])):
+        if type(f) == type(sympy.Subs(list_var[0], list_var[0], list_var[0])):
             s = str(f)
             if s.endswith('))'):
                 if '(' in re.split(',', s)[-1]:
@@ -384,15 +371,15 @@ def str_to_dict(f, term, arr_pow, arr_deriv, list_all, list_var):
             if ')' in subs:
                 subs = subs.strip(')')
             s = s.replace(subs, subs_t)
-            f = sp.sympify(parens(s).strip('('))
+            f = sympy.sympify(parens(s).strip('('))
             if isinstance(f, tuple):
                 f = f[0]
 
         if f.is_Derivative:
             term['variable'] = str(f.args[0]).split("(")[0]
-            for v in f.args[1:]:
-                idx = np.where(list_var == v[0])
-                arr_deriv[idx] = v[1]
+            for var in f.args[1:]:
+                idx = np.where(list_var == var[0])
+                arr_deriv[idx] = var[1]
 
     term['constants'] = list(arr_pow.astype(int))
     term['derivatives'] = list(arr_deriv.astype(int))
@@ -402,34 +389,33 @@ def str_to_dict(f, term, arr_pow, arr_deriv, list_all, list_var):
 def parens(s):
     i = s.count(')') - 1
     groups = s[s.find('('):].split(')')
-    return (')'.join(groups[:i]) + ')')
+    return ')'.join(groups[:i]) + ')'
 
 def simplify_redundant_eqn(det_eqns):
-    """given a dict of equations reduces the set 
-       by eliminating redundant eqns. It is just a test
+    """given a dict of equations reduces the set by eliminating redundant eqns. It is just a test
        to try the logic far from being ready yet
 
-       Args:
-       det_eqns (dict): 
+    Parameters
+    ----------
+    det_eqns : dict
     """
     simplify = True
-    N = len(det_eqns)
-    exit = 0
+    exit_param = 0
     zero_terms = {}
     det_eqns_aux = copy.deepcopy(det_eqns)
     while simplify:
         for idx, eqn in det_eqns.items():
-            for i, zero in zero_terms.items():
+            for _, zero in zero_terms.items():
                 for term in eqn:
                     if is_zero(zero, term) and term in det_eqns_aux[idx]:
                         det_eqns_aux[idx][det_eqns_aux[idx].index(term)] = 0
-                        exit = 0
+                        exit_param = 0
                 det_eqns_aux[idx] = list(
                     filter(lambda num: num != 0, det_eqns_aux[idx]))
-                exit += 1
+                exit_param += 1
             if len(det_eqns_aux[idx]) == 1:
                 zero_terms[idx] = det_eqns_aux[idx][0]
-            if exit > N:
+            if exit_param > len(det_eqns):
                 simplify = False
         det_eqns = copy.deepcopy(det_eqns_aux)
     simplify_det_eqns = {k: v for k, v in det_eqns.items() if v}
@@ -439,78 +425,6 @@ def simplify_redundant_eqn(det_eqns):
 
 def simplify_redundant_eqn_second_phase(det_eqn):
     for idx, eqn in det_eqn.items():
-        det_eqn[idx] = de.drop_constants(eqn)
-    return det_eqn
-
-def drop_constants(eqn):
-    """If a term has the same constants it drops them.
-
-    Parameters
-    ----------
-    eqn : [list]
-        list containing all terms
-
-    Returns
-    -------
-    [list]
-        A list containing all terms but without the constants
-        multiplying the whole equation. 
-    """
-    equal_terms = True
-    equal_constants = True
-    terms_info = eqn[0]["constants"]
-    coeff_info = [abs(eqn[0]["coefficient"]), eqn[0]["constants"]]
-    for term in eqn:
-        if coeff_info != \
-                [abs(term["coefficient"]), term["constants"]]:
-            equal_terms = False
-        if terms_info != term["constants"]:
-            equal_constants = False
-            return eqn
-    if equal_constants:
-        N = len(eqn[0]["constants"])
-        for i in range(len(eqn)):
-            if equal_terms:
-                eqn[i]["coefficient"] = int(eqn[i]["coefficient"]
-                                            / abs(eqn[i]["coefficient"]))
-            eqn[i]["constants"] = [0 for i in range(N)]
-    return eqn
-
-def simplify_redundant_eqn_second_phase(det_eqn):
-    for idx, eqn in det_eqn.items():
         det_eqn[idx] = drop_constants(eqn)
     return det_eqn
     
-def drop_constants(eqn):
-    """If a term has the same constants it drops them.
-
-    Parameters
-    ----------
-    eqn : [list]
-        list containing all terms
-
-    Returns
-    -------
-    [list]
-        A list containing all terms but without the constants
-        multiplying the whole equation. 
-    """
-    equal_terms = True
-    equal_constants = True
-    terms_info = eqn[0]["constants"]
-    coeff_info = [abs(eqn[0]["coefficient"]), eqn[0]["constants"]]
-    for term in eqn:
-        if coeff_info != \
-                [abs(term["coefficient"]), term["constants"]]:
-            equal_terms = False
-        if terms_info != term["constants"]:
-            equal_constants = False
-            return eqn
-    if equal_constants:
-        N = len(eqn[0]["constants"])
-        for i in range(len(eqn)):
-            if equal_terms:
-                eqn[i]["coefficient"] = int(eqn[i]["coefficient"]
-                                            / abs(eqn[i]["coefficient"]))
-            eqn[i]["constants"] = [0 for i in range(N)]
-    return eqn
