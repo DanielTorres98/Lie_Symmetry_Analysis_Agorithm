@@ -77,10 +77,11 @@ def find_constants(data: pd.DataFrame, var_list: list):
                 try:
                     parts[0] = int(parts[0])
                 except:
-                # Here we catch any greek letters, and then put an integer of 1 at the beginning of the list
+                # Here we catch any greek letters, and then put an integer of 1 at the beginning
+                # of the list
                     parts[0] = parts[0].strip('(')
                     parts = [1] + parts
-            
+
             if len(parts) > 2:
                 # At this point we definitely have a greek letter: print(parts[1:-1])
                 for letter in parts[1:-1]:
@@ -93,8 +94,7 @@ def find_constants(data: pd.DataFrame, var_list: list):
                         continue
                     else:
                         cnst_list.append(nc)
-    return cnst_list
-                                                
+    return cnst_list                                               
 
 def process_term(term, cnst_list, var_list):
     """A function that splits a single term up into individual parts
@@ -113,7 +113,8 @@ def process_term(term, cnst_list, var_list):
         try:
             parts[0] = int(parts[0])
         except:
-        # Here we catch any greek letters, and then put an integer of 1 at the beginning of the list
+        # Here we catch any greek letters, and then put an integer of 1 at the beginning
+        # of the list
             parts[0] = parts[0].strip('(')
             parts = [1] + parts
 
@@ -141,7 +142,7 @@ def process_term(term, cnst_list, var_list):
             greek_list.append(i)          
     else:
         greek_list = [0 for cnst in cnst_list]
-        pass
+        
     fnc, derivatives = process_derivative(parts[-1], var_list)
     return [parts[0], greek_list, derivatives, fnc]
 
@@ -166,14 +167,14 @@ def process_derivative(derivative, var_list):
     return fnc, int_list(int_list)
 
 def term_to_dict(term):
-    """ Takes the list with the information of the each term and put it in a dictionary 
+    """ Takes the list with the information of the each term and put it in a dictionary
 
     Parameters
     ----------
     term : list
-        List containing the information of an individual term. 
+        List containing the information of an individual term.
     """
-    if type(term[0]) != int:
+    if not isinstance(term[0], int):
         term[0] = 1
     term_dict = {"coefficient": term[0],
                  "constants": term[1],
@@ -188,7 +189,7 @@ def eqn_process(equation, cnst_list, var_list):
     Parameters
     ----------
     term : list
-        List containing the information of an individual term. 
+        List containing the information of an individual term.
     """
     signs = get_signs(equation)
     terms = get_terms(equation)
