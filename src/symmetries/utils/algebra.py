@@ -4,6 +4,7 @@ import re
 import numpy as np
 import sympy
 
+from DEint import compare_derivatives, drop_constants
 
 def is_zero(zero_term, term):
     """Given a term that is zero, returns true if
