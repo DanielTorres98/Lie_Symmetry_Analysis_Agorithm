@@ -27,8 +27,7 @@ def point_symmetries(F, order, F_rules_array, list_indep, list_dep, list_cte, la
     inft_derivatives, dep_vars_derivatives = higher_infinitesimals_generator(infts_ind, infts_dep,
                                                                              order, list_indep, list_dep)
     infts_dummy = [item for sublist in inft_derivatives for item in sublist]
-    dep_vars_derivatives = [
-        item for sublist in dep_vars_derivatives for item in sublist]
+    dep_vars_derivatives = [item for sublist in dep_vars_derivatives for item in sublist]
     infts = infts + infts_dummy
     F, deriv_names = der_relabel(dep_vars_derivatives, F)
     vars_and_derivatives = list_indep + list_dep + deriv_names
@@ -39,7 +38,7 @@ def point_symmetries(F, order, F_rules_array, list_indep, list_dep, list_cte, la
     det_eqn = get_det_eqns(XF, empty_det_eqn)
     det_eqn = str_eqn_to_dict_eqn(det_eqn, list_var, list_all)
     det_eqn = simplify_redundant_eqn(det_eqn)
-    det_eqns = simplify_redundant_eqn_second_phase(det_eqns)
+    det_eqns = simplify_redundant_eqn_second_phase(det_eqn) #unsure
     if latex:
         latex_code = latex_det_eqn(det_eqns,
                         latex_dict, list_var, list_cte)

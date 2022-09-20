@@ -1,28 +1,28 @@
-# I want to put the interpretation code I write in a separate file, 
-# so I can call them when I need to in a main analysis file
-from sympy import *
+"""I want to put the interpretation code I write in a separate file,
+ so I can call them when I need to in a main analysis file"""
+import pandas as pd
 
-def intlist(s):
-    """ Recieves a list written in a string format
-        and transforms it into a list object.
+def int_list(string_list:str):
+    """ Receives a list written in a string format and transforms it into a list object.
 
-        Args:
-        s (str):  string version of a list.
+    Parameters
+    ----------
+    s : str
+        string version of a list.
     """
-    s = s.strip('[')
-    s = s.strip(']')
-    l = s.split(', ')
-    interpreted = []
-    for n in l:
-        interpreted.append(int(n))
+    string_list = string_list.strip('[')
+    string_list = string_list.strip(']')
+    interpreted = [int(n) for n in string_list.split(', ')]
     return interpreted
 
-def get_terms(equation):
-    """A function that will split the equations into terms. 
-       The terms are always separated by a + or -.
+def get_terms(equation: str):
+    """A function that will split the equations into terms. The terms are always separated
+    by a + or -.
 
-       Args:
-       equation (str): equation written in a string form.
+    Parameters
+    ----------
+    equation : str
+        equation written in a string form.
     """
     equation = equation.replace('+','-')
     # Break the equation into it's terms
@@ -31,16 +31,18 @@ def get_terms(equation):
     terms = [term.strip(' ') for term in term_list]
     if terms[0] == '':
         terms.pop(0)
-    # This gets rid of the empty string that results from the equation starting with a negative sign.
+    # This gets rid of the empty string that results from the equation starting with
+    #  a negative sign.
     return terms
 
 
-def get_signs(equation):
-    """For a given equation in a string format will give 
-       a list with the sign of each term.
+def get_signs(equation: str):
+    """For a given equation in a string format will give a list with the sign of each term.
 
-       Args:
-       equation (str): equation written in a string form.
+    Parameters
+    ----------
+    equation : str
+        equation written in a string form.
     """
     sign_array = []
     if equation[0] != "-":
@@ -55,10 +57,13 @@ def get_signs(equation):
     return sign_array
 
 
-def find_constants(data, var_list):
+def find_constants(data: pd.DataFrame, var_list: list):
     """Find the constants in the equations in the data set.
 
-       data (DataFrame): dataframe containing all equations.
+    Parameters
+    ----------
+    data : pd.DataFrame
+        dataframe containing all equations.
     """
     var_csv_label_list = []
     for k in range(1, len(var_list)):
@@ -92,10 +97,9 @@ def find_constants(data, var_list):
                                                 
 
 def process_term(term, cnst_list, var_list):
-    """ # A function that splits a single term up 
-        into individual parts
+    """ # A function that splits a single term up into individual parts
 
-        Args:
+        Parameters
         term (str): Individual term of the equation in
                     string format
         cnst_list (list): list with the constants of the
@@ -143,10 +147,9 @@ def process_term(term, cnst_list, var_list):
 # Function to process the derivatives.
 
 def process_derivative(derivative, var_list):
-    """ Takes the derivative and variable information from 
-        a string
+    """ Takes the derivative and variable information from a string
 
-        Args:
+        Parameters
         derivative (str): A containing the information of which
                           variable is being derivend and the order
                           of the derivatives
@@ -158,13 +161,12 @@ def process_derivative(derivative, var_list):
     else:
         int_list = [0 for i in var_list]
         return derivative, int_list
-    return fnc, intlist(int_list)
+    return fnc, int_list(int_list)
 
 def term_to_dict(term):
-    """ Takes the list with the information of the
-        each term and put it in a dictionary 
+    """ Takes the list with the information of the each term and put it in a dictionary 
 
-        Args:
+        Parameters
         term (list): List containing the information of
                      an individual term. 
     """
@@ -180,7 +182,7 @@ def eqn_process(equation, cnst_list, var_list):
     """ Takes an equation and split it in a list of dictionaries
         saving all the relevant information for each term
 
-        Args:
+        Parameters
         term (list): List containing the information of
                      an individual term. 
     """
@@ -196,10 +198,9 @@ def eqn_process(equation, cnst_list, var_list):
     return list_terms
 
 def is_zero(zero_term, term):
-    """Given a term that is zero, returns true if
-       term is zero as well.
+    """Given a term that is zero, returns true if term is zero as well.
 
-        Args:
+        Parameters
         zero_term (dict): a dictionary containing the
                           information of the zero term
         term (dict):      a dictionary containing the
@@ -214,7 +215,7 @@ def compare_derivatives(D1,D2):
        tells if the second term contains a derivative equal 
        or higher order for all possible derivatives.
 
-        Args:
+        Parameters
         D1 (list): list of derivatives of term 1
         D2 (list): list of derivatives of term 1
     """
@@ -240,11 +241,10 @@ def drop_constants(eqn):
     return eqn
 def dict_to_symb(term, var_dict, var_list, 
                     sym_cte_list, one_term):
-    """Given a dictionary it returns the symbolic
-       equivalent. It drops all constants if it is 
+    """Given a dictionary it returns the symbolic equivalent. It drops all constants if it is
        just one term.
 
-        Args:
+        Parameters
         eqn (dict): dictionary with the information of
                     the term.
     """
@@ -264,11 +264,10 @@ def dict_to_symb(term, var_dict, var_list,
 
 def dict_to_latex(term, var_dict, var_list, 
                     sym_cte_list, one_term):
-    """Given a dictionary it returns the symbolic
-       equivalent. It drops all constants if it is 
+    """Given a dictionary it returns the symbolic equivalent. It drops all constants if it is
        just one term.
 
-        Args:
+        Parameters
         eqn (dict): dictionary with the information of
                     the term.
     """
@@ -296,10 +295,9 @@ def dict_to_latex(term, var_dict, var_list,
     return latex_term
 
 def take_derivative(list_devs, var, var_list):
-    """Given a list of derivatives executes all the
-       derivatives on the variable.
+    """Given a list of derivatives executes all the derivatives on the variable.
 
-        Args:
+        Parameters
         list_devs (list): list of ints containing the 
                           order of the derivative 
                           with respect to the variable
@@ -317,10 +315,9 @@ def take_derivative(list_devs, var, var_list):
     return var
 
 def latex_derivative(list_devs, var, var_list):
-    """Given a list of derivatives executes all the
-       derivatives on the variable.
+    """Given a list of derivatives executes all the derivatives on the variable.
 
-        Args:
+        Parameters
         list_devs (list): list of ints containing the 
                           order of the derivative 
                           with respect to the variable
