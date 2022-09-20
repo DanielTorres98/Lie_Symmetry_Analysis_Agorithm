@@ -97,13 +97,14 @@ def find_constants(data: pd.DataFrame, var_list: list):
                                                 
 
 def process_term(term, cnst_list, var_list):
-    """ # A function that splits a single term up into individual parts
+    """A function that splits a single term up into individual parts
 
-        Parameters
-        term (str): Individual term of the equation in
-                    string format
-        cnst_list (list): list with the constants of the
-                          set of original differential equations
+    Parameters
+    ----------
+    term : str
+        Individual term of the equation in string format
+    cnst_list : list
+        list with the constants of the set of original differential equations
     """
     # First need to separate coefficients
     parts = term.split('*')
@@ -149,10 +150,11 @@ def process_term(term, cnst_list, var_list):
 def process_derivative(derivative, var_list):
     """ Takes the derivative and variable information from a string
 
-        Parameters
-        derivative (str): A containing the information of which
-                          variable is being derivend and the order
-                          of the derivatives
+    Parameters
+    ----------
+    derivative : str
+        A containing the information of which variable is being derivend and the order
+        of the derivatives
     """
     if 'Derivative' in derivative:
         derivative = derivative.strip('Derivative')
@@ -166,9 +168,10 @@ def process_derivative(derivative, var_list):
 def term_to_dict(term):
     """ Takes the list with the information of the each term and put it in a dictionary 
 
-        Parameters
-        term (list): List containing the information of
-                     an individual term. 
+    Parameters
+    ----------
+    term : list
+        List containing the information of an individual term. 
     """
     if type(term[0]) != int:
         term[0] = 1
@@ -182,9 +185,10 @@ def eqn_process(equation, cnst_list, var_list):
     """ Takes an equation and split it in a list of dictionaries
         saving all the relevant information for each term
 
-        Parameters
-        term (list): List containing the information of
-                     an individual term. 
+    Parameters
+    ----------
+    term : list
+        List containing the information of an individual term. 
     """
     signs = get_signs(equation)
     terms = get_terms(equation)
@@ -200,145 +204,68 @@ def eqn_process(equation, cnst_list, var_list):
 def is_zero(zero_term, term):
     """Given a term that is zero, returns true if term is zero as well.
 
-        Parameters
-        zero_term (dict): a dictionary containing the
-                          information of the zero term
-        term (dict):      a dictionary containing the
-                          information of the term
+    Parameters
+    ----------
+    zero_term: dict
+        a dictionary containing the information of the zero term
+    term : dict
+        a dictionary containing the information of the term
     """
     return zero_term['variable']==term['variable'] and\
           compare_derivatives(zero_term['derivatives'], term['derivatives'])
 
 
-def compare_derivatives(D1,D2):
-    """Given to lists with the information of the derivatives
-       tells if the second term contains a derivative equal 
-       or higher order for all possible derivatives.
+def compare_derivatives(der_1:list, der_2:list)-> bool:
+    """Given to lists with the information of the derivatives tells if the second term contains a
+     derivative equal or higher order for all possible derivatives.
 
-        Parameters
-        D1 (list): list of derivatives of term 1
-        D2 (list): list of derivatives of term 1
+    Parameters
+    ----------
+    der_1 : list
+        list of the order of derivatives
+        for each variable for term 1.
+    der_2 : list
+        list of the order of derivatives
+        for each variable for term 1.
+
+    Returns
+    -------
+    Boolean
+        Returns False if at least one derivative in D2 is
+        of a lower order than in D1. Returns True otherwise.
     """
-    D1D2 =  zip(D1, D2)
-    for d1, d2 in D1D2:
-        if d2 < d1:
+    for d_1, d_2 in zip(der_1, der_2):
+        if d_2 < d_1:
             return False
     return True
 
-def drop_constants(eqn):
+def drop_constants(eqn: list[dict]):
+    """If a term has the same constants it drops them.
+
+    Parameters
+    ----------
+    eqn : list
+        dict containing all terms
+
+    Returns
+    -------
+    list
+        A list containing all terms but without the constants multiplying the whole equation.
+    """
     equal_terms = True
+    equal_constants = True
+    terms_info = eqn[0]["constants"]
     coeff_info = [abs(eqn[0]["coefficient"]), eqn[0]["constants"]]
+
     for term in eqn:
-        if  coeff_info != \
-            [abs(term["coefficient"]), term["constants"]]:
+        if coeff_info != [abs(term["coefficient"]), term["constants"]]:
             equal_terms = False
-    if equal_terms:
-        N = len(eqn[0]["constants"])
-        for i in range(len(eqn)):
-            eqn[i]["coefficient"] = int(eqn[i]["coefficient"]
-            /abs(eqn[i]["coefficient"]))
-            eqn[i]["constants"] = [0 for i in range(N)]
+        if terms_info != term["constants"]:
+            equal_constants = False
+
+    if equal_constants:
+        for i, _ in enumerate(eqn):
+            if equal_terms:
+                eqn[i]["coefficient"] = int(eqn[i]["coefficient"]/ abs(eqn[i]["coefficient"]))
+            eqn[i]["constants"] = [0 ]*len(eqn[0]["constants"])
     return eqn
-def dict_to_symb(term, var_dict, var_list, 
-                    sym_cte_list, one_term):
-    """Given a dictionary it returns the symbolic equivalent. It drops all constants if it is
-       just one term.
-
-        Parameters
-        eqn (dict): dictionary with the information of
-                    the term.
-    """
-    var = var_dict[term['variable']]
-    list_devs = term['derivatives']
-    cte_power = zip(sym_cte_list, term['constants'])
-    a = 1
-    if one_term:
-        coeff = 1
-    else:
-        for cte, n in cte_power:
-            a *= cte**n
-        coeff = term['coefficient']
-    D = take_derivative(list_devs, var, var_list)
-    sym_term = coeff*a*D
-    return sym_term
-
-def dict_to_latex(term, var_dict, var_list, 
-                    sym_cte_list, one_term):
-    """Given a dictionary it returns the symbolic equivalent. It drops all constants if it is
-       just one term.
-
-        Parameters
-        eqn (dict): dictionary with the information of
-                    the term.
-    """
-    var = var_dict[term['variable']]
-    list_devs = term['derivatives']
-    cte_power = zip(sym_cte_list, term['constants'])
-    a = ''
-    if one_term:
-        coeff = ''
-    else:
-        for cte, n in cte_power:
-            if len(cte)>1:
-                if n == 1:
-                    a = a + "\\" + str(cte)
-                if n > 1:
-                    a = a + "\\" + str(cte) + '^' + str(n) 
-            else:
-                if n == 1:
-                    a = a + str(cte)
-                if n > 1:
-                    a = a + str(cte) + '^' + str(n)           
-        coeff = str(term['coefficient'])
-    D = latex_derivative(list_devs, var, var_list)
-    latex_term = coeff + a + D
-    return latex_term
-
-def take_derivative(list_devs, var, var_list):
-    """Given a list of derivatives executes all the derivatives on the variable.
-
-        Parameters
-        list_devs (list): list of ints containing the 
-                          order of the derivative 
-                          with respect to the variable
-                          var_lists.
-        var (symbol):     variable to be differentiate
-        var_list (list):  list of independant and dependant
-                          variables.
-    """
-    D_v = zip(list_devs, var_list)
-    var_str = var
-    for D, v in D_v:
-        for _ in range(D):
-            var_str = var_str + '_' + v
-    var = symbols(var_str)
-    return var
-
-def latex_derivative(list_devs, var, var_list):
-    """Given a list of derivatives executes all the derivatives on the variable.
-
-        Parameters
-        list_devs (list): list of ints containing the 
-                          order of the derivative 
-                          with respect to the variable
-                          var_lists.
-        var (symbol):     variable to be differentiate
-        var_list (list):  list of independant and dependant
-                          variables.
-    """
-    D_v = zip(list_devs, var_list)
-    var_str = '\\' + var
-    for D, v in D_v:
-        for _ in range(D):
-            if len(v)>1:
-                if '_' in var_str:
-                    var_str = var_str + "\\" +  v
-                else:
-                    var_str = var_str + '_' + '{' + "\\" + v
-            else:
-                if '_' in var_str:
-                    var_str = var_str + v
-                else:
-                    var_str = var_str + '_' + '{' + v
-    var = var_str + '}'
-    return var

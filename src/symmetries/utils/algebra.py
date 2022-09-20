@@ -28,63 +28,6 @@ def is_zero(zero_term, term):
         compare_derivatives(zero_term['derivatives'], term['derivatives'])
 
 
-def compare_derivatives(der_1:list, der_2:list)-> bool:
-    """Given to lists with the information of the derivatives tells if the second term contains a
-     derivative equal or higher order for all possible derivatives.
-
-    Parameters
-    ----------
-    der_1 : list
-        list of the order of derivatives
-        for each variable for term 1.
-    der_2 : list
-        list of the order of derivatives
-        for each variable for term 1.
-
-    Returns
-    -------
-    Boolean
-        Returns False if at least one derivative in D2 is
-        of a lower order than in D1. Returns True otherwise.
-    """
-    for d_1, d_2 in zip(der_1, der_2):
-        if d_2 < d_1:
-            return False
-    return True
-
-
-def drop_constants(eqn: list[dict]):
-    """If a term has the same constants it drops them.
-
-    Parameters
-    ----------
-    eqn : list
-        dict containing all terms
-
-    Returns
-    -------
-    list
-        A list containing all terms but without the constants multiplying the whole equation.
-    """
-    equal_terms = True
-    equal_constants = True
-    terms_info = eqn[0]["constants"]
-    coeff_info = [abs(eqn[0]["coefficient"]), eqn[0]["constants"]]
-
-    for term in eqn:
-        if coeff_info != [abs(term["coefficient"]), term["constants"]]:
-            equal_terms = False
-        if terms_info != term["constants"]:
-            equal_constants = False
-
-    if equal_constants:
-        for i, _ in enumerate(eqn):
-            if equal_terms:
-                eqn[i]["coefficient"] = int(eqn[i]["coefficient"]/ abs(eqn[i]["coefficient"]))
-            eqn[i]["constants"] = [0 ]*len(eqn[0]["constants"])
-    return eqn
-
-
 def get_common_factors(XF, list_dep, list_indep, constants):
     """This funtion creates an empty dictionary where the keys
     are all possible commmon factors of the determining equations.
