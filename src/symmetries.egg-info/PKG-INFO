@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: symmetries
-Version: 0.1.dev31+g8a298be.d20220916
+Version: 0.1.dev32+g419ce6c.d20220919
 Summary: Lie symmetry analysis algorithm
 License: Proprietary
 Classifier: Programming Language :: Python :: 3

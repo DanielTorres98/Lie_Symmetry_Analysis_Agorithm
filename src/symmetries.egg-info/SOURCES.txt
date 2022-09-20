@@ -2,12 +2,10 @@
 README.md
 pyproject.toml
 requirements.txt
-requirements2.txt
 setup.cfg
 setup.py
 Mathematica/IntroToSymmetry.m
 Mathematica/IntroToSymmetry.nb
-Notebooks/Agrupaciones shido.ipynb
 Notebooks/Point_Symmetries_Example_Runs.ipynb
 Notebooks/testing/LieSymmetryAnalysis_Test.ipynb
 Notebooks/testing/functions_draft.ipynb
@@ -16,6 +14,7 @@ data_test/data_algebra/data_drop_constants.json
 data_test/data_algebra/data_is_zero.json
 data_test/data_algebra/data_key_ordering.json
 data_test/data_latex/data_dict_to_latex.json
+src/symmetries/__init__.py
 src/symmetries.egg-info/PKG-INFO
 src/symmetries.egg-info/SOURCES.txt
 src/symmetries.egg-info/dependency_links.txt
