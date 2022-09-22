@@ -1,10 +1,11 @@
 import sympy
 from sympy import Derivative as D
-from combinatorics import list_combinatorics
+from symmetries.utils.combinatorics import list_combinatorics
 
 
-def symbolic_derivative(list_devs, var, var_list):
-    """Given a list of derivatives executes all the derivatives on the variable.
+def symbolic_derivative(list_devs: list, var: str, var_list: list):
+    """Given a list of derivatives executes all the
+       derivatives on the variable.
 
     Parameters
     ----------
@@ -13,11 +14,12 @@ def symbolic_derivative(list_devs, var, var_list):
     var : symbol
         variable to be differentiate
     var_list : list
-        list of isndependant and dependant variables.
+        list of independant and dependant
+        variables.
 
     Returns
     -------
-    symbol
+    sympy.symbol
         Derivative of the symbolic variable.
     """
     D_v = zip(list_devs, var_list)
@@ -37,19 +39,22 @@ def dict_to_symb(term, var_dict, var_list,
     Parameters
     ----------
     term : dict
-        dictionary containing all thhe information of the term.
+        dictionary containing all thhe information
+        of the term.
     var_dict : dict
-        translates the variables from the standard names to users labels.
+        translates the variables from the standard
+        names to users labels.
     var_list : list
         list of strings containing the variables.
     sym_cte_list : list
-        list containing the constants in symbolic format.
+        list containing the constants in symbolic
+        format.
     one_term : boolean
         True if it is just one term. False otherwise.
 
     Returns
     -------
-    sympy.symbol
+    [sympy.symbol]
         symbolic expression of the derivative.
     """
     var = var_dict[term['variable']]
