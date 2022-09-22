@@ -56,6 +56,7 @@ def dict_to_symb(term, var_dict, var_list, sym_cte_list, one_term):
     var = var_dict[term['variable']]
     list_devs = term['derivatives']
     cte_power = zip(sym_cte_list, term['constants'])
+    var_list_str = [str(ele).split('(')[0] for ele in var_list]
     a = 1
     if one_term:
         coeff = 1
@@ -63,7 +64,7 @@ def dict_to_symb(term, var_dict, var_list, sym_cte_list, one_term):
         for cte, n in cte_power:
             a *= cte**n
         coeff = term['coefficient']
-    D = take_derivative(list_devs, var, var_list)
+    D = take_derivative(list_devs, var, var_list_str)
     sym_term = coeff*a*D
     return sym_term
 
@@ -86,12 +87,7 @@ def take_derivative(list_devs, var, var_list):
     sympy.symbol
         symbolic representation of the derivative
     """
-    D_v = zip(list_devs, var_list)
-    var_str = var
-    for D, v in D_v:
-        for _ in range(D):
-            var_str = var_str + '_' + v
-    var = sympy.symbols(var_str)
+    var = symbolic_derivative(list_devs, var, var_list)
     return var
 
 

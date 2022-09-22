@@ -1,6 +1,5 @@
 from symmetries.utils.algebra import (get_common_factors, get_det_eqns,
-                           simplify_redundant_eqn, str_eqn_to_dict_eqn,
-                           simplify_redundant_eqn_second_phase)
+                           simplify_redundant_eqn, str_eqn_to_dict_eqn)
 from symmetries.utils.symbolic import (der_relabel, group_operator,
                             higher_infinitesimals_generator,
                             infinitesimals_generator, subs_new_vars,
