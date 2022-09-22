@@ -30,24 +30,24 @@ def is_zero(zero_term, term):
 
 
 def get_common_factors(XF, list_dep, list_indep, constants):
-    """This funtion creates an empty dictionary where the keys
-    are all possible commmon factors of the determining equations.
+    """This function creates an empty dictionary where the keys
+    are all possible common factors of the determining equations.
 
     Parameters
     ----------
-    XF : symbolic expresion
+    XF : symbolic expression
         The Lie operator acting over a differential equation F.
     list_dep : list
         list with all dependant variables
     list_indep : list
-        list of all independant varables
+        list of all independent variables
     constants : list
         list with all constants
 
     Returns
     -------
     dict
-        empty dictionary where the keys are the possible factorizable
+        empty dictionary where the keys are the possible factorable
         terms for the determining equations.
     """
     S = str(XF.expand())
@@ -243,13 +243,13 @@ def str_eqn_to_dict_eqn(dict_det_eqn, list_var, list_all):
 
 
 def str_to_dict(f, term, arr_pow, arr_deriv, list_all, list_var):
-    """Returns a dictionary that saves all the information of a symbolic expresion in a
+    """Returns a dictionary that saves all the information of a symbolic expression in a
     determining equation.
 
     Parameters
     ----------
-    f : simpy expression
-        A simbolic expresion to analyze
+    f : sympy expression
+        A symbolic expression to analyze
     term : dict
         dictionary containing all the information of the term
     arr_pow : numpy array
@@ -261,7 +261,7 @@ def str_to_dict(f, term, arr_pow, arr_deriv, list_all, list_var):
     list_all : list
         list with all constants and variables. Constants go first
     list_var : list
-        list with all dependant and independant variables.
+        list with all dependant and independent variables.
 
     Returns
     -------
@@ -336,8 +336,8 @@ def parens(s):
     return ')'.join(groups[:i]) + ')'
 
 def simplify_redundant_eqn(det_eqns):
-    """given a dict of equations reduces the set by eliminating redundant eqns. It is just a test
-       to try the logic far from being ready yet
+    """given a dict of equations reduces the set by eliminating redundant equations. It is just a
+    test to try the logic far from being ready yet
 
     Parameters
     ----------
