@@ -29,7 +29,7 @@ def dict_to_symb(term, var_dict, var_list, sym_cte_list, one_term):
     var = var_dict[term['variable']]
     list_devs = term['derivatives']
     cte_power = zip(sym_cte_list, term['constants'])
-    var_list_str = [str(ele).split('(')[0] for ele in var_list]
+    var_list_str = [str(ele).split('(', maxsplit=1)[0] for ele in var_list]
     a = 1
     if one_term:
         coeff = 1
@@ -42,7 +42,7 @@ def dict_to_symb(term, var_dict, var_list, sym_cte_list, one_term):
     return sym_term
 
 
-def take_derivative(dev_list, var, var_list):
+def take_derivative(dev_list, var_string, var_list):
     """Given a list of derivatives executes all the
        derivatives on the variable.
 
@@ -64,7 +64,7 @@ def take_derivative(dev_list, var, var_list):
     d_var = zip(dev_list, var_list)
     for derivative, var in d_var:
         for _ in range(derivative):
-            var_string = var_string + '_' + var
+            var_string += '_' + var
     return sympy.symbols(var_string)
 
 
@@ -182,13 +182,13 @@ def der_relabel(dep_vars_derivatives, F):
     """
     derivatives_relabel = []
     for d in dep_vars_derivatives:
-        d_str = str(d.args[0]).split('(')[0] + '_'
+        d_str = str(d.args[0]).split('(', maxsplit=1)[0] + '_'
         d_order = list(d.args)
         d_order.pop(0)
         for tup in d_order:
             for _ in range(tup[1]):
                 if '(' in str(tup[0]):
-                    v = str(tup[0]).split('(')[0]
+                    v = str(tup[0]).split('(', maxsplit=1)[0]
                 else:
                     v = str(tup[0])
                 d_str = f'{d_str}{v}'
