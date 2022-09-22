@@ -52,8 +52,6 @@ def get_signs(equation: str):
             sign_array.append(1)
         elif char == '-':
             sign_array.append(-1)
-        else:
-            continue
     return sign_array
 
 
@@ -63,13 +61,12 @@ def find_constants(data: pd.DataFrame, var_list: list):
     Parameters
     ----------
     data : pd.DataFrame
-        dataframe containing all equations.
+        pd.DataFrame containing all equations.
     """
     var_csv_label_list = []
-    for k in range(1, len(var_list)):
+    for k in range(1, len(var_list)+1):
         var_csv_label_list.append('z' + str(k))
-    var_csv_label_list.append('z' + str(k+1))
-    cnst_list = var_csv_label_list
+
     for equation in data:
         for term in get_terms(equation):
             parts = term.split('*')
@@ -90,20 +87,18 @@ def find_constants(data: pd.DataFrame, var_list: list):
                         nc = letter.split('^')[0]
                     else:
                         nc = letter
-                    if nc in cnst_list:
-                        continue
-                    else:
-                        cnst_list.append(nc)
-    return cnst_list                                               
+                    if nc not in var_csv_label_list:
+                        var_csv_label_list.append(nc)
+    return var_csv_label_list
 
-def process_term(term, cnst_list, var_list):
+def process_term(term, constant_list, var_list):
     """A function that splits a single term up into individual parts
 
     Parameters
     ----------
     term : str
         Individual term of the equation in string format
-    cnst_list : list
+    constant_list : list
         list with the constants of the set of original differential equations
     """
     # First need to separate coefficients
@@ -127,22 +122,22 @@ def process_term(term, cnst_list, var_list):
     greek_list = []
     if len(parts) > 2:
         # At this point we definitely have a greek letter: print(parts[1:-1])
-        for cnst in cnst_list:
+        for constant in constant_list:
             i = 0
-            # In general we have something like 'η^2'. 
+            # In general we have something like 'η^2'.
             # We need to add the power of each greek letter to the list.
             for letter in parts[1:-1]:
-                if cnst in letter:
+                if constant in letter:
                     if '^' in letter:
                         i += int(letter.split('^')[1])
                     else:
                         i += 1
                 else:
                     continue
-            greek_list.append(i)          
+            greek_list.append(i)
     else:
-        greek_list = [0 for cnst in cnst_list]
-        
+        greek_list = [0]*len(constant_list)
+
     fnc, derivatives = process_derivative(parts[-1], var_list)
     return [parts[0], greek_list, derivatives, fnc]
 
@@ -154,17 +149,17 @@ def process_derivative(derivative, var_list):
     Parameters
     ----------
     derivative : str
-        A containing the information of which variable is being derivend and the order
+        A containing the information of which variable is being derived and the order
         of the derivatives
     """
     if 'Derivative' in derivative:
         derivative = derivative.strip('Derivative')
-        int_list = derivative[:derivative.find(']')+1]
+        ints = derivative[:derivative.find(']')+1]
         fnc = derivative[derivative.find(']')+1:].strip('[]')
     else:
-        int_list = [0 for i in var_list]
-        return derivative, int_list
-    return fnc, int_list(int_list)
+        ints = [0 for i in var_list]
+        return derivative, ints
+    return fnc, ints(ints)
 
 def term_to_dict(term):
     """ Takes the list with the information of the each term and put it in a dictionary
@@ -182,7 +177,7 @@ def term_to_dict(term):
                  "variable": term[3]}
     return term_dict
 
-def eqn_process(equation, cnst_list, var_list):
+def eqn_process(equation, constant_list, var_list):
     """ Takes an equation and split it in a list of dictionaries
         saving all the relevant information for each term
 
@@ -196,7 +191,7 @@ def eqn_process(equation, cnst_list, var_list):
     signs_terms =  zip(signs, terms)
     list_terms = []
     for sign, term in signs_terms:
-        processed_term = process_term(term, cnst_list, var_list)
+        processed_term = process_term(term, constant_list, var_list)
         term_dict = term_to_dict(processed_term)
         term_dict["coefficient"] = term_dict["coefficient"]*sign
         list_terms.append(term_dict)
@@ -256,10 +251,10 @@ def drop_constants(eqn: list[dict]):
     equal_terms = True
     equal_constants = True
     terms_info = eqn[0]["constants"]
-    coeff_info = [abs(eqn[0]["coefficient"]), eqn[0]["constants"]]
+    coefficient_info = [abs(eqn[0]["coefficient"]), eqn[0]["constants"]]
 
     for term in eqn:
-        if coeff_info != [abs(term["coefficient"]), term["constants"]]:
+        if coefficient_info != [abs(term["coefficient"]), term["constants"]]:
             equal_terms = False
         if terms_info != term["constants"]:
             equal_constants = False
