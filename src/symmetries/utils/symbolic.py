@@ -14,7 +14,7 @@ def symbolic_derivative(list_devs: list, var: str, var_list: list):
     var : symbol
         variable to be differentiate
     var_list : list
-        list of independant and dependant
+        list of independent and dependant
         variables.
 
     Returns
@@ -31,24 +31,20 @@ def symbolic_derivative(list_devs: list, var: str, var_list: list):
     return var
 
 
-def dict_to_symb(term, var_dict, var_list,
-                 sym_cte_list, one_term):
+def dict_to_symb(term, var_dict, var_list, sym_cte_list, one_term):
     """Given a dictionary it returns the symbolic equivalent. It drops all constants if it is
     just one term.
 
     Parameters
     ----------
     term : dict
-        dictionary containing all thhe information
-        of the term.
+        dictionary containing all the information of the term.
     var_dict : dict
-        translates the variables from the standard
-        names to users labels.
+        translates the variables from the standard names to users labels.
     var_list : list
         list of strings containing the variables.
     sym_cte_list : list
-        list containing the constants in symbolic
-        format.
+        list containing the constants in symbolic format.
     one_term : boolean
         True if it is just one term. False otherwise.
 
@@ -83,7 +79,7 @@ def take_derivative(list_devs, var, var_list):
     var : sympy.symbol
         variable to be differentiate
     var_list : list
-        list of independant and dependant variables.
+        list of independent and dependant variables.
 
     Returns
     -------
@@ -100,7 +96,7 @@ def take_derivative(list_devs, var, var_list):
 
 
 def infinitesimals_generator(list_indep, list_dep):
-    """Creates the infinitesimals of the independent and dependants variables. Not the derivatives.
+    """Creates the infinitesimals of the independent and dependents variables. Not the derivatives.
 
     Parameters
     ----------
@@ -138,7 +134,7 @@ def higher_infinitesimals_generator(list_inft_indep, list_inft,
     order : int
         higher order involved in the system of differential equations
     list_indep : list
-        list with the independant variables
+        list with the independent variables
     list_dep : list
         list with the dependant variables
 
@@ -188,10 +184,10 @@ def group_operator(F, variables, infts):
         list with the infinitesimals
     """
     var_inft = zip(variables, infts)
-    LF = 0
+    l_f = 0
     for var, inft in var_inft:
-        LF += inft*D(F, var)
-    return sympy.simplify(LF)
+        l_f += inft*D(F, var)
+    return sympy.simplify(l_f)
 
 def der_relabel(dep_vars_derivatives, F):
     """Given list of derivatives it changes the partial derivative notation for subscripts.
@@ -199,7 +195,7 @@ def der_relabel(dep_vars_derivatives, F):
     Parameters
     ----------
     dep_vars_derivatives : list
-        list of all posible derivatives
+        list of all possible derivatives
     F : sympy expression
         Functional to substitute in.
 
@@ -296,7 +292,7 @@ def Diff(f, y_var, x_var, order):
 
 def higher_infinitesimals_generator_2(list_inft_indep, list_inft,
                                     order, list_indep, list_dep):
-    """This funtions applies the logic to get the infintesimals
+    """This functions applies the logic to get the infintesimals
        of the derivatives.
 
     Parameters
@@ -308,7 +304,7 @@ def higher_infinitesimals_generator_2(list_inft_indep, list_inft,
     order : int
         higher order involved in the system of differential equations
     list_indep : list
-        list with the independant variables
+        list with the independent variables
     list_dep : type
         list with the dependant variables
 
@@ -371,15 +367,15 @@ def sym_det_eqn(det_eqn, list_indep, list_dep, constants):
                 '(' + "\\" + v + ')'
         else:
             var_dict[f'eta{v}'] = f'eta^({v})'
-    M = sympy.Matrix([[]])
+    matrix = sympy.Matrix([[]])
     i = 1
     for eqn in det_eqn.values():
-        M = M.row_insert(i-1, sympy.Matrix([[i,
+        matrix = matrix.row_insert(i-1, sympy.Matrix([[i,
                                        sympy.Eq(get_symbolic_terms(
                                            eqn, var_dict, constants, var_list), 0)
                                        ]]))
         i += 1
-    return M
+    return matrix
 
 
 def get_symbolic_terms(eqn, var_dict, list_cte, var_list):
@@ -397,11 +393,11 @@ def get_symbolic_terms(eqn, var_dict, list_cte, var_list):
     # for idx in range(len(constants) - len(var_list)):
     #     sym_cte_list.append(sympy.symbols('alpha_' + str(idx)))
     sym_cte_list = list_cte + var_list
-    A = 0
+    a = 0
     for term in eqn:
         one_term = False
         if len(eqn) == 1:
             one_term = True
-        A += dict_to_symb(term, var_dict, var_list,
+        a += dict_to_symb(term, var_dict, var_list,
                              sym_cte_list, one_term)
-    return A
+    return a
