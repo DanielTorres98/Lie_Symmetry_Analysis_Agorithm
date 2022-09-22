@@ -1,34 +1,7 @@
+"""File with functions regarding symbolic treatment."""
 import sympy
 from sympy import Derivative as D
 from symmetries.utils.combinatorics import list_combinatorics
-
-
-def symbolic_derivative(list_devs: list, var: str, var_list: list):
-    """Given a list of derivatives executes all the
-       derivatives on the variable.
-
-    Parameters
-    ----------
-    list_devs : list
-        list of ints containing the order of the derivative with respect to the variable var_lists.
-    var : symbol
-        variable to be differentiate
-    var_list : list
-        list of independent and dependant
-        variables.
-
-    Returns
-    -------
-    sympy.symbol
-        Derivative of the symbolic variable.
-    """
-    D_v = zip(list_devs, var_list)
-    var_str = var
-    for D, v in D_v:
-        for _ in range(D):
-            var_str = var_str + '_' + v
-    var = sympy.symbols(var_str)
-    return var
 
 
 def dict_to_symb(term, var_dict, var_list, sym_cte_list, one_term):
@@ -50,7 +23,7 @@ def dict_to_symb(term, var_dict, var_list, sym_cte_list, one_term):
 
     Returns
     -------
-    [sympy.symbol]
+    sympy.symbol
         symbolic expression of the derivative.
     """
     var = var_dict[term['variable']]
@@ -64,31 +37,35 @@ def dict_to_symb(term, var_dict, var_list, sym_cte_list, one_term):
         for cte, n in cte_power:
             a *= cte**n
         coeff = term['coefficient']
-    D = take_derivative(list_devs, var, var_list_str)
-    sym_term = coeff*a*D
+    derivative = take_derivative(list_devs, var, var_list_str)
+    sym_term = coeff*a*derivative
     return sym_term
 
 
-def take_derivative(list_devs, var, var_list):
-    """Given a list of derivatives executes all the derivatives on the variable.
+def take_derivative(dev_list, var, var_list):
+    """Given a list of derivatives executes all the
+       derivatives on the variable.
 
     Parameters
     ----------
-    list_devs : list
-        list of ints containing the order of the derivative with respect to the variable
-        var_lists.
-    var : sympy.symbol
+    dev_list : list
+        list of ints containing the order of the derivative with respect to the variable var_lists.
+    var : symbol
         variable to be differentiate
     var_list : list
-        list of independent and dependant variables.
+        list of independent and dependant
+        variables.
 
     Returns
     -------
     sympy.symbol
-        symbolic representation of the derivative
+        Derivative of the symbolic variable.
     """
-    var = symbolic_derivative(list_devs, var, var_list)
-    return var
+    d_var = zip(dev_list, var_list)
+    for derivative, var in d_var:
+        for _ in range(derivative):
+            var_string = var_string + '_' + var
+    return sympy.symbols(var_string)
 
 
 def infinitesimals_generator(list_indep, list_dep):
@@ -104,7 +81,7 @@ def infinitesimals_generator(list_indep, list_dep):
     Returns
     -------
     list
-        list with the infinitesimals. 
+        list with the infinitesimals.
     """
     infts = []
     variables = list_indep + list_dep
@@ -156,7 +133,7 @@ def higher_infinitesimals_generator(list_inft_indep, list_inft,
                 x_aux = deriv_vars_order[-1]
                 eta_aux = deriv_infints[idx_1][idx_2]
             aux_list_deriv.append(D(y_aux, x_aux))
-            eta_aux = eta_aux.diff(x_aux)        
+            eta_aux = eta_aux.diff(x_aux)
             for i, ind_i in enumerate(list_indep):
                 eta_aux -= D(y_aux, ind_i)*(
                     list_inft_indep[i].diff(x_aux))
@@ -205,11 +182,11 @@ def der_relabel(dep_vars_derivatives, F):
     """
     derivatives_relabel = []
     for d in dep_vars_derivatives:
-        d_str = str(d.args[0]).split('(')[0] + '_' 
+        d_str = str(d.args[0]).split('(')[0] + '_'
         d_order = list(d.args)
         d_order.pop(0)
         for tup in d_order:
-            for t in range(tup[1]):
+            for _ in range(tup[1]):
                 if '(' in str(tup[0]):
                     v = str(tup[0]).split('(')[0]
                 else:
@@ -217,8 +194,7 @@ def der_relabel(dep_vars_derivatives, F):
                 d_str = f'{d_str}{v}'
         derivatives_relabel.append(sympy.symbols(d_str))
 
-    F = subs_new_vars(derivatives_relabel, 
-                        dep_vars_derivatives, F)
+    F = subs_new_vars(derivatives_relabel, dep_vars_derivatives, F)
     return F, derivatives_relabel
 
 def subs_new_vars(new_labeling, previous_labeling, F):
@@ -240,10 +216,8 @@ def subs_new_vars(new_labeling, previous_labeling, F):
     """
     new_labeling.reverse()
     previous_labeling.reverse()
-    new_old_names = zip(new_labeling, 
-                            previous_labeling)
 
-    for new, old in new_old_names:
+    for new, old in zip(new_labeling, previous_labeling):
         F = F.xreplace({old: new})
     new_labeling.reverse()
     previous_labeling.reverse()
@@ -267,19 +241,17 @@ def deriv_infts(infts, variables, order):
         _description_
     """
     deriv_infitnits = []
-    var_combinatorics = list_combinatorics(variables, order)
-    for deriv_vars_order in var_combinatorics:
+    for deriv_vars_order in list_combinatorics(variables, order):
         for inft in infts:
-            inft_aux = inft
             for var in deriv_vars_order:
-                inft_aux = D(inft_aux, var)
+                inft_aux = D(inft, var)
             deriv_infitnits.append(inft_aux)
     return deriv_infitnits
 
 def Diff(f, y_var, x_var, order):
     dy = D(y_var, x_var).expand()
     Df = D(f, x_var).expand()
-    for o in range(order):
+    for _ in range(order):
         Df += dy*D(f, y_var)
         Df = Df.expand()
         y_var = dy
@@ -311,30 +283,31 @@ def higher_infinitesimals_generator_2(list_inft_indep, list_inft,
         variables and a list with the respective infinitesimals.
     """
     dep_vars_derivatives = []
-    deriv_infts = []
+    deriv_infints = []
     var_combinatorics = list_combinatorics(list_indep, order)
     for deriv_vars_order in var_combinatorics:
         aux_list_deriv = []
         aux_list_inft = []
-        for idx_2 in range(len(list_dep)):
+        for idx_2, dep in enumerate(list_dep):
             if len(deriv_vars_order) == 1:
-                y_aux = list_dep[idx_2]
+                y_aux = dep
                 x_aux =  deriv_vars_order[0]
                 eta_aux = list_inft[idx_2]
             else:
                 idx_1 = var_combinatorics.index(deriv_vars_order[:-1])
                 y_aux = dep_vars_derivatives[idx_1][idx_2]
                 x_aux = deriv_vars_order[-1]
-                eta_aux = deriv_infts[idx_1][idx_2]
+                eta_aux = deriv_infints[idx_1][idx_2]
             aux_list_deriv.append(D(y_aux, x_aux))
-            eta_aux = eta_aux.diff(x_aux)           
-            for i in range(len(list_indep)):
-                eta_aux -= D(y_aux, list_indep[i])*(
-                    list_inft_indep[i].diff(x_aux))
+            eta_aux = eta_aux.diff(x_aux)
+
+            for i, ind in enumerate(list_indep):
+                eta_aux -= D(y_aux, ind)*(list_inft_indep[i].diff(x_aux))
             aux_list_inft.append(eta_aux)
         dep_vars_derivatives.append(aux_list_deriv)
-        deriv_infts.append(aux_list_inft)
-    return deriv_infts, dep_vars_derivatives
+        deriv_infints.append(aux_list_inft)
+
+    return deriv_infints, dep_vars_derivatives
 
 def sym_det_eqn(det_eqn, list_indep, list_dep, constants):
     """Gives the symbolic version of remaining
@@ -347,35 +320,35 @@ def sym_det_eqn(det_eqn, list_indep, list_dep, constants):
     """
     var_dict = {}
     var_list = list_indep + list_dep
+
     indep_var_str = [str(ele).replace(' ', '') for ele in list_indep]
     for dep_var in indep_var_str:
-        v = dep_var.split('(')[0]
-        if len(v) > 1:
-            var_dict[f'xi{v}'] = 'eta^' + \
-                '(' + "\\" + v + ')'
+        var = dep_var.split('(')[0]
+        if len(var) > 1:
+            var_dict[f'xi{var}'] = 'eta^' + \
+                '(' + "\\" + var + ')'
         else:
-            var_dict[f'xi{v}'] = f'xi^({v})'
+            var_dict[f'xi{var}'] = f'xi^({var})'
+
     dep_var_str = [str(ele).replace(' ', '') for ele in list_dep]
     for dep_var in dep_var_str:
-        v = dep_var.split('(')[0]
-        if len(v) > 1:
-            var_dict[f'eta{v}'] = 'eta^' + \
-                '(' + "\\" + v + ')'
+        var = dep_var.split('(')[0]
+        if len(var) > 1:
+            var_dict[f'eta{var}'] = 'eta^' + \
+                '(' + "\\" + var + ')'
         else:
-            var_dict[f'eta{v}'] = f'eta^({v})'
+            var_dict[f'eta{var}'] = f'eta^({var})'
+
     matrix = sympy.Matrix([[]])
-    i = 1
-    for eqn in det_eqn.values():
-        matrix = matrix.row_insert(i-1, sympy.Matrix([[i,
-                                       sympy.Eq(get_symbolic_terms(
-                                           eqn, var_dict, constants, var_list), 0)
-                                       ]]))
-        i += 1
+    for i, eqn in enumerate(det_eqn.values()):
+        matrix = matrix.row_insert(i,
+        sympy.Matrix([[i, sympy.Eq(get_symbolic_terms(eqn, var_dict, constants, var_list), 0)]])
+        )
     return matrix
 
 
 def get_symbolic_terms(eqn, var_dict, list_cte, var_list):
-    """given a list of dictionaries with the information of each term, retuns the symbolic
+    """given a list of dictionaries with the information of each term, returns the symbolic
     equivalent.
 
     Parameters
