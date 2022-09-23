@@ -8,9 +8,3 @@ The algorithm is able to find the reduced form of the determinant equations. How
 To Run the algorithm the algorithm you first need to install the requirements. It can be done by running the following command:
 
 pip install -r requirements.txt
-
-# Flow Chart
-
-A flow chart of the quasi-algorithm can be found here:
-
-https://drive.google.com/file/d/1crfWHsYNCI39yp8yVjr1_JDN2UbKFWJm/view?usp=sharing

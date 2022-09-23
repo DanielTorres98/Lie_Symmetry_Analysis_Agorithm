@@ -1,6 +1,5 @@
 from symmetries.utils.algebra import (get_common_factors, get_det_eqns,
-                           simplify_redundant_eqn, str_eqn_to_dict_eqn,
-                           simplify_redundant_eqn_second_phase)
+                           simplify_redundant_eqn, str_eqn_to_dict_eqn)
 from symmetries.utils.symbolic import (der_relabel, group_operator,
                             higher_infinitesimals_generator,
                             infinitesimals_generator, subs_new_vars,
@@ -27,8 +26,7 @@ def point_symmetries(F, order, F_rules_array, list_indep, list_dep, list_cte, la
     inft_derivatives, dep_vars_derivatives = higher_infinitesimals_generator(infts_ind, infts_dep,
                                                                              order, list_indep, list_dep)
     infts_dummy = [item for sublist in inft_derivatives for item in sublist]
-    dep_vars_derivatives = [
-        item for sublist in dep_vars_derivatives for item in sublist]
+    dep_vars_derivatives = [item for sublist in dep_vars_derivatives for item in sublist]
     infts = infts + infts_dummy
     F, deriv_names = der_relabel(dep_vars_derivatives, F)
     vars_and_derivatives = list_indep + list_dep + deriv_names
