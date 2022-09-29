@@ -68,14 +68,14 @@ def take_derivative(dev_list, var_string, var_list):
     return sympy.symbols(var_string)
 
 
-def infinitesimals_generator(list_indep, list_dep):
+def infinitesimals_generator(independent_variables, dependent_variables):
     """Creates the infinitesimals of the independent and dependents variables. Not the derivatives.
 
     Parameters
     ----------
-    list_indep : list
+    independent_variables : list
         list with the independent variables.
-    list_dep : list
+    dependent_variables : list
         list with the dependent variables.
 
     Returns
@@ -84,31 +84,31 @@ def infinitesimals_generator(list_indep, list_dep):
         list with the infinitesimals.
     """
     infts = []
-    variables = list_indep + list_dep
-    for var in list_indep:
+    variables = independent_variables + dependent_variables
+    for var in independent_variables:
         fun = sympy.Function(f'xi^{var}')
         infts.append(fun(*variables))
-    for var in list_dep:
+    for var in dependent_variables:
         fun = sympy.Function(f'eta^{var}'.split('(')[0])
         infts.append(fun(*variables))
     return infts
 
 
-def higher_infinitesimals_generator(list_inft_indep, list_inft,
-                                    order, list_indep, list_dep):
+def higher_infinitesimals_generator(infinitesimals_of_independent_var, infinitesimals_of_dependent_var,
+                                    order:int, independent_variables, dependent_variables):
     """This functions applies the logic to get the infintesimals of the derivatives.
 
     Parameters
     ----------
-    list_inft_indep : list
+    infinitesimals_of_independent_var : list
         list of the infinitesimals of the independent variables
-    list_inft : list
+    infinitesimals_of_dependent_var : list
         list of the infinitesimals of the dependent variables
     order : int
         higher order involved in the system of differential equations
-    list_indep : list
+    independent_variables : list
         list with the independent variables
-    list_dep : list
+    dependent_variables : list
         list with the dependant variables
 
     Returns
@@ -119,14 +119,14 @@ def higher_infinitesimals_generator(list_inft_indep, list_inft,
     """
     dep_vars_derivatives = []
     deriv_infints = []
-    var_combinatorics = list_combinatorics(list_indep, order)
+    var_combinatorics = list_combinatorics(independent_variables, order)
     for deriv_vars_order in var_combinatorics:
         aux_list_deriv = []
-        aux_list_inft = []
-        for idx_2, y_aux in enumerate(list_dep):
+        aux_infinitesimals_of_dependent_var = []
+        for idx_2, y_aux in enumerate(dependent_variables):
             if len(deriv_vars_order) == 1:
                 x_aux =  deriv_vars_order[0]
-                eta_aux = list_inft[idx_2]
+                eta_aux = infinitesimals_of_dependent_var[idx_2]
             else:
                 idx_1 = var_combinatorics.index(deriv_vars_order[:-1])
                 y_aux = dep_vars_derivatives[idx_1][idx_2]
@@ -134,16 +134,16 @@ def higher_infinitesimals_generator(list_inft_indep, list_inft,
                 eta_aux = deriv_infints[idx_1][idx_2]
             aux_list_deriv.append(D(y_aux, x_aux))
             eta_aux = eta_aux.diff(x_aux)
-            for i, ind_i in enumerate(list_indep):
+            for i, ind_i in enumerate(independent_variables):
                 eta_aux -= D(y_aux, ind_i)*(
-                    list_inft_indep[i].diff(x_aux))
-            aux_list_inft.append(eta_aux)
+                    infinitesimals_of_independent_var[i].diff(x_aux))
+            aux_infinitesimals_of_dependent_var.append(eta_aux)
         dep_vars_derivatives.append(aux_list_deriv)
-        deriv_infints.append(aux_list_inft)
+        deriv_infints.append(aux_infinitesimals_of_dependent_var)
     return deriv_infints, dep_vars_derivatives
 
 
-def group_operator(F, variables, infts):
+def group_operator(model):
     """given a differential equation F, gives the Lie operator acting over F.
 
     Parameters
@@ -156,10 +156,11 @@ def group_operator(F, variables, infts):
     infts : list
         list with the infinitesimals
     """
-    var_inft = zip(variables, infts)
+    var_inft = zip(model.independent_variables + model.dependent_variables +
+                   model.dependent_variables_partial_derivatives, model.infinitesimals)
     l_f = 0
     for var, inft in var_inft:
-        l_f += inft*D(F, var)
+        l_f += inft*D(model.differential_equation, var)
     return sympy.simplify(l_f)
 
 def der_relabel(dep_vars_derivatives, F):
@@ -258,22 +259,23 @@ def Diff(f, y_var, x_var, order):
         dy = D(y_var, x_var).expand()
     return Df
 
-def higher_infinitesimals_generator_2(list_inft_indep, list_inft,
-                                    order, list_indep, list_dep):
+def higher_infinitesimals_generator_2(infinitesimals_of_independent_var:list,
+                                      infinitesimals_of_dependent_var:list, order:int,
+                                      independent_variables:list, dependent_variables:list):
     """This functions applies the logic to get the infintesimals
        of the derivatives.
 
     Parameters
     ----------
-    list_inft_indep : list
+    infinitesimals_of_independent_var : list
         list of the infinitesimals of the independent variables
-    list_inft : list
+    infinitesimals_of_dependent_var : list
         list of the infinitesimals of the dependent variables
     order : int
         higher order involved in the system of differential equations
-    list_indep : list
+    independent_variables : list
         list with the independent variables
-    list_dep : type
+    dependent_variables : type
         list with the dependant variables
 
     Returns
@@ -284,15 +286,15 @@ def higher_infinitesimals_generator_2(list_inft_indep, list_inft,
     """
     dep_vars_derivatives = []
     deriv_infints = []
-    var_combinatorics = list_combinatorics(list_indep, order)
+    var_combinatorics = list_combinatorics(independent_variables, order)
     for deriv_vars_order in var_combinatorics:
         aux_list_deriv = []
-        aux_list_inft = []
-        for idx_2, dep in enumerate(list_dep):
+        aux_infinitesimals_of_dependent_var = []
+        for idx_2, dep in enumerate(dependent_variables):
             if len(deriv_vars_order) == 1:
                 y_aux = dep
                 x_aux =  deriv_vars_order[0]
-                eta_aux = list_inft[idx_2]
+                eta_aux = infinitesimals_of_dependent_var[idx_2]
             else:
                 idx_1 = var_combinatorics.index(deriv_vars_order[:-1])
                 y_aux = dep_vars_derivatives[idx_1][idx_2]
@@ -301,15 +303,15 @@ def higher_infinitesimals_generator_2(list_inft_indep, list_inft,
             aux_list_deriv.append(D(y_aux, x_aux))
             eta_aux = eta_aux.diff(x_aux)
 
-            for i, ind in enumerate(list_indep):
-                eta_aux -= D(y_aux, ind)*(list_inft_indep[i].diff(x_aux))
-            aux_list_inft.append(eta_aux)
+            for i, ind in enumerate(independent_variables):
+                eta_aux -= D(y_aux, ind)*(infinitesimals_of_independent_var[i].diff(x_aux))
+            aux_infinitesimals_of_dependent_var.append(eta_aux)
         dep_vars_derivatives.append(aux_list_deriv)
-        deriv_infints.append(aux_list_inft)
+        deriv_infints.append(aux_infinitesimals_of_dependent_var)
 
     return deriv_infints, dep_vars_derivatives
 
-def sym_det_eqn(det_eqn, list_indep, list_dep, constants):
+def sym_det_eqn(det_eqn, independent_variables, dependent_variables, constants):
     """Gives the symbolic version of remaining
        determining equation.
 
@@ -319,9 +321,9 @@ def sym_det_eqn(det_eqn, list_indep, list_dep, constants):
         dictionary will all the determining equations.
     """
     var_dict = {}
-    var_list = list_indep + list_dep
+    var_list = independent_variables + dependent_variables
 
-    indep_var_str = [str(ele).replace(' ', '') for ele in list_indep]
+    indep_var_str = [str(ele).replace(' ', '') for ele in independent_variables]
     for dep_var in indep_var_str:
         var = dep_var.split('(')[0]
         if len(var) > 1:
@@ -330,7 +332,7 @@ def sym_det_eqn(det_eqn, list_indep, list_dep, constants):
         else:
             var_dict[f'xi{var}'] = f'xi^({var})'
 
-    dep_var_str = [str(ele).replace(' ', '') for ele in list_dep]
+    dep_var_str = [str(ele).replace(' ', '') for ele in dependent_variables]
     for dep_var in dep_var_str:
         var = dep_var.split('(')[0]
         if len(var) > 1:

@@ -4,9 +4,9 @@ import re
 import numpy as np
 import sympy
 
-from .DEint import compare_derivatives, drop_constants
+from symmetries.utils.DEint import compare_derivatives, drop_constants
 
-def is_zero(zero_term, term):
+def is_zero(zero_term:dict, term:dict):
     """Given a term that is zero, returns true if
        term is zero as well.
 
@@ -29,7 +29,7 @@ def is_zero(zero_term, term):
         compare_derivatives(zero_term['derivatives'], term['derivatives'])
 
 
-def get_common_factors(XF, list_dep, list_indep, constants):
+def get_common_factors(XF, dependent_variables:list, independent_variables:list, constants:list):
     """This function creates an empty dictionary where the keys
     are all possible common factors of the determining equations.
 
@@ -37,9 +37,9 @@ def get_common_factors(XF, list_dep, list_indep, constants):
     ----------
     XF : symbolic expression
         The Lie operator acting over a differential equation F.
-    list_dep : list
+    dependent_variables : list
         list with all dependant variables
-    list_indep : list
+    independent_variables : list
         list of all independent variables
     constants : list
         list with all constants
@@ -57,11 +57,11 @@ def get_common_factors(XF, list_dep, list_indep, constants):
     S = re.sub(r'Derivative\([(eta)(xi)\^][\w\(,\)\^]*\&*\d*', "", S)
     S = re.sub(r'[(eta)(xi)]+\^[\w\(,\)\^]+\**', "", S)
     S = re.sub(r'Derivative', "#", S)
-    dep_var_str = [str(ele).replace(' ', '') for ele in list_dep]
+    dep_var_str = [str(ele).replace(' ', '') for ele in dependent_variables]
     for var in dep_var_str:
         var = var.replace("(", "\(").replace(")", "\)")
         S = re.sub(f'(?<!\(|,){var}\&*\d*', "", S)
-    indep_var_str = [str(ele).replace(' ', '') for ele in list_indep]
+    indep_var_str = [str(ele).replace(' ', '') for ele in independent_variables]
     for var in indep_var_str:
         S = re.sub(f'(?<!\(|,){var}\&*\d*', "", S)
     constants_str = [str(ele).replace(' ', '') for ele in constants]
@@ -328,7 +328,6 @@ def str_to_dict(f, term, arr_pow, arr_deriv, list_all, list_var):
     term['constants'] = list(arr_pow.astype(int))
     term['derivatives'] = list(arr_deriv.astype(int))
     return term
-
 
 def parens(s):
     i = s.count(')') - 1
