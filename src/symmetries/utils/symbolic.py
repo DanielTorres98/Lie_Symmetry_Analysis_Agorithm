@@ -157,7 +157,8 @@ def group_operator(model):
         list with the infinitesimals
     """
     var_inft = zip(model.independent_variables + model.dependent_variables +
-                   model.dependent_variables_partial_derivatives, model.infinitesimals)
+                   model.derivatives_subscript_notation, model.infinitesimals)
+
     l_f = 0
     for var, inft in var_inft:
         l_f += inft*D(model.differential_equation, var)
