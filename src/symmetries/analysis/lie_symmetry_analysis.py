@@ -1,22 +1,29 @@
-from symmetries.utils.algebra import (get_common_factors, get_det_eqns,
+from symmetries.utils.algebra import (get_common_factors, get_determinant_equations,
                            simplify_redundant_eqn, str_eqn_to_dict_eqn)
-from symmetries.utils.symbolic import (der_relabel, group_operator,
-                            higher_infinitesimals_generator,
-                            infinitesimals_generator, subs_new_vars,
-                            sym_det_eqn)
+from symmetries.utils.symbolic import sym_det_eqn
 from symmetries.utils.latex import latex_det_eqn
-from symmetries.objects.system import system
+from symmetries.objects.system import System
 import sympy
 
 
-def point_symmetries(F, order:int, F_rules_array:dict, independent_variables:list,
-                     dependent_variables:list, constants:list, latex:bool=False):
-    all_variables = independent_variables + dependent_variables
-    constants_and_variables = constants + all_variables
+def point_symmetries(
+    F,
+    order:int,
+    f_rules_array:dict,
+    independent_variables:list,
+    dependent_variables:list,
+    constants:list,
+    latex:bool=False
+):
 
-    model = system(differential_equation=F, rules_array=F_rules_array,
-                   independent_variables=independent_variables,
-                   dependent_variables=dependent_variables, constants=constants, order=order)
+    model = System(
+        differential_equation=F,
+        order=order,
+        rules_array=f_rules_array,
+        independent_variables=independent_variables,
+        dependent_variables=dependent_variables,
+        constants=constants,
+    )
     # This section of the code generates the infitesimals for all the independent variables and
     # dependent variables.
     #
@@ -25,17 +32,43 @@ def point_symmetries(F, order:int, F_rules_array:dict, independent_variables:lis
 
     # Relabel derivatives of variables as new symbols to be able to take partial derivatives.
     #
-    model.variable_relabaling()
+    model.variable_relabeling()
+    model.subs_new_vars(
+        new_labeling = model.derivatives_subscript_notation,
+        previous_labeling = model.dependent_variables_partial_derivatives
+    )
 
     # Applying the group operator over the function F.
     #
-    XF = group_operator(model=model)
-    XF = subs_new_vars(model.dependent_variables_partial_derivatives,
-                       model.derivatives_subscript_notation, XF)
-    XF = sympy.simplify(XF.subs(F_rules_array))
-    empty_det_eqn = get_common_factors(XF, dependent_variables, independent_variables, constants)
-    det_eqn = get_det_eqns(XF, empty_det_eqn)
-    det_eqn = str_eqn_to_dict_eqn(det_eqn, all_variables, constants_and_variables)
+    model.group_operator()
+
+    model.subs_new_vars(
+        new_labeling = model.dependent_variables_partial_derivatives,
+        previous_labeling = model.derivatives_subscript_notation,
+    )
+
+    model.differential_equation = sympy.simplify(
+        model.differential_equation.subs(f_rules_array)
+    )
+    empty_det_eqn = get_common_factors(
+        model.differential_equation,
+        dependent_variables,
+        independent_variables,
+        constants
+    )
+    det_eqn = get_determinant_equations(
+        model.differential_equation,
+        empty_det_eqn
+    )
+
+    all_variables = independent_variables + dependent_variables
+    constants_and_variables = constants + all_variables
+    det_eqn = str_eqn_to_dict_eqn(
+        det_eqn,
+        all_variables,
+        constants_and_variables
+    )
+
     det_eqn = simplify_redundant_eqn(det_eqn)
     # det_eqns = simplify_redundant_eqn_second_phase(det_eqns)
 

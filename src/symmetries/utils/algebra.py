@@ -115,7 +115,7 @@ def key_ordering(keys):
     return keys_order
 
 
-def get_det_eqns(XF, dict_det_eqn):
+def get_determinant_equations(XF, dict_det_eqn):
     """This function gives the determinant equations
     in a string format
 

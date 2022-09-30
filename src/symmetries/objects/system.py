@@ -2,9 +2,8 @@ import sympy
 from sympy import Derivative as D
 
 from symmetries.utils.combinatorics import list_combinatorics
-from symmetries.utils.symbolic import subs_new_vars
 
-class system():
+class System():
     def __init__(self, differential_equation, rules_array:dict,
                  independent_variables:list, dependent_variables:list, constants:list, order:int):
         self.differential_equation = differential_equation
@@ -15,11 +14,11 @@ class system():
         self.order = order
         self.n_independent = len(independent_variables)
         self.n_dependent = len(dependent_variables)
-        self.infinitesimals = []
-        self.infinitesimals_dep = []
-        self.infinitesimals_ind = []
-        self.dependent_variables_partial_derivatives = []
-        self.derivatives_subscript_notation = []
+        self.infinitesimals: list = []
+        self.infinitesimals_dep: list = []
+        self.infinitesimals_ind: list = []
+        self.dependent_variables_partial_derivatives: list = []
+        self.derivatives_subscript_notation: list = []
 
     def infinitesimals_generator(self):
         """Creates the infinitesimals of the independent and dependents variables. Not the
@@ -37,18 +36,21 @@ class system():
         list
             list with the infinitesimals.
         """
-        infts = []
         variables = self.independent_variables + self.dependent_variables
+
+        ind_infts = []
         for var in self.independent_variables:
             fun = sympy.Function(f'xi^{var}')
-            infts.append(fun(*variables))
+            ind_infts.append(fun(*variables))
+
+        dep_infts = []
         for var in self.dependent_variables:
             fun = sympy.Function(f'eta^{var}'.split('(')[0])
-            infts.append(fun(*variables))
-        self.infinitesimals = infts
-        self.infinitesimals_of_independent_var = infts[0:self.n_independent]
-        self.infinitesimals_of_dependent_var = infts[self.n_independent:(self.n_dependent + 
-                                                     self.n_independent)]
+            dep_infts.append(fun(*variables))
+
+        self.infinitesimals = ind_infts+dep_infts
+        self.infinitesimals_ind = ind_infts
+        self.infinitesimals_dep = dep_infts
 
     def higher_infinitesimals_generator(self):
         """This functions applies the logic to get the infintesimals of the derivatives.
@@ -81,7 +83,7 @@ class system():
             for idx_2, y_aux in enumerate(self.dependent_variables):
                 if len(deriv_vars_order) == 1:
                     x_aux =  deriv_vars_order[0]
-                    eta_aux = self.infinitesimals_of_dependent_var[idx_2]
+                    eta_aux = self.infinitesimals_dep[idx_2]
                 else:
                     idx_1 = var_combinatorics.index(deriv_vars_order[:-1])
                     y_aux = dep_vars_derivatives[idx_1][idx_2]
@@ -91,7 +93,7 @@ class system():
                 eta_aux = eta_aux.diff(x_aux)
                 for i, ind_i in enumerate(self.independent_variables):
                     eta_aux -= D(y_aux, ind_i)*(
-                        self.infinitesimals_of_independent_var[i].diff(x_aux))
+                        self.infinitesimals_ind[i].diff(x_aux))
                 aux_infinitesimals_of_dependent_var.append(eta_aux)
             dep_vars_derivatives.append(aux_list_deriv)
             deriv_infints.append(aux_infinitesimals_of_dependent_var)
@@ -101,11 +103,12 @@ class system():
         self.infinitesimals += infts_dummy
         self.dependent_variables_partial_derivatives = dep_vars_derivatives
 
-    def variable_relabaling(self):
+
+    def variable_relabeling(self):
         """Given list of derivatives it changes the partial derivative notation for subscripts
            notation.
         """
-        derivatives_relabel = []
+        self.derivatives_subscript_notation = []
         for d in self.dependent_variables_partial_derivatives:
             d_str = str(d.args[0]).split('(', maxsplit=1)[0] + '_'
             d_order = list(d.args)
@@ -117,8 +120,53 @@ class system():
                     else:
                         v = str(tup[0])
                     d_str = f'{d_str}{v}'
-            derivatives_relabel.append(sympy.symbols(d_str))
-        self.derivatives_subscript_notation = derivatives_relabel
-        self.differential_equation = subs_new_vars(derivatives_relabel,
-                                                   self.dependent_variables_partial_derivatives,
-                                                   self.differential_equation)
+            self.derivatives_subscript_notation.append(sympy.symbols(d_str))
+
+    def subs_new_vars(self, new_labeling, previous_labeling):
+        """Substitutes notation to another format
+
+        Parameters
+        ----------
+        new_labeling : list
+            list with the new labeling
+        previous_labeling : list
+            list with the old symbols
+        F : sympy expression
+            expression to apply the new labeling
+
+        Returns
+        -------
+        F: sympy expression
+            expression in the new format
+        """
+
+        new_labeling.reverse()
+        previous_labeling.reverse()
+
+        for new, old in zip(new_labeling, previous_labeling):
+            self.differential_equation = self.differential_equation.xreplace({old: new})
+
+        new_labeling.reverse()
+        previous_labeling.reverse()
+
+    def group_operator(self):
+        """given a differential equation F, gives the Lie operator acting over F.
+
+        Parameters
+        ----------
+        F : sympy expression
+            It is the partial differential equation written with sympy symbols
+        variables : list
+            list containing all variables and the possible derivatives according to the order of the
+            differential equation.
+        infts : list
+            list with the infinitesimals
+        """
+        all_variables = self.independent_variables \
+                        + self.dependent_variables \
+                        + self.derivatives_subscript_notation
+
+        l_f = 0
+        for var, inft in zip(all_variables, self.infinitesimals):
+            l_f += inft*D(self.differential_equation, var)
+        self.differential_equation = sympy.simplify(l_f)
