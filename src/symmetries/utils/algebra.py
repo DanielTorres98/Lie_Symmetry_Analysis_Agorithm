@@ -103,10 +103,7 @@ def key_ordering(keys):
             for key_2 in keys:
                 if key_2 != key_1 and (key_2 not in keys_order):
                     k1 = key_1.split("*")
-                    counter = 0
-                    for k in k1:
-                        if k in key_2:
-                            counter += 1
+                    counter = sum(1 for k in k1 if k in key_2)
                     if counter == len(k1):
                         inside = True
                         break
@@ -115,7 +112,7 @@ def key_ordering(keys):
     return keys_order
 
 
-def get_det_eqns(XF, dict_det_eqn):
+def get_determinant_equations(XF, dict_det_eqn):
     """This function gives the determinant equations
     in a string format
 
@@ -163,42 +160,35 @@ def group_terms(dict_det_eqn, XF_terms):
     """
     for key in dict_det_eqn.keys():
         dict_det_eqn[key] = []
+
     lonely_terms = []
     for element in XF_terms:
         add = False
-        for key in dict_det_eqn:
+        for key, value in dict_det_eqn.items():
             factors = key.split('*')
             if len(factors) == 1:
                 if key in element:
-                    dict_det_eqn[key].append(element.replace(key, ''))
-                    dict_det_eqn[key][-1] = re.sub(r'(?<=[\+\-])\*+',
-                                                   '', dict_det_eqn[key][-1])
-                    dict_det_eqn[key][-1] = re.sub(r'(?<=\d|\))\*+',
-                                                   '*', dict_det_eqn[key][-1])
-                    dict_det_eqn[key][-1] = re.sub(r'\*\*+',
-                                                   '*', dict_det_eqn[key][-1])
-                    if dict_det_eqn[key][-1][-1] == "*":
-                        dict_det_eqn[key][-1] = dict_det_eqn[key][-1][:-1]
+                    value.append(element.replace(key, ''))
+                    value[-1] = re.sub(r'(?<=[\+\-])\*+','', value[-1])
+                    value[-1] = re.sub(r'(?<=\d|\))\*+','*', value[-1])
+                    value[-1] = re.sub(r'\*\*+','*', value[-1])
+                    if value[-1][-1] == "*":
+                        value[-1] = value[-1][:-1]
                     add = True
                     break
             else:
                 inside = True
-                for f in factors:
-                    if f not in element:
-                        inside = False
-                        break
+                if any(True for f in factors if f not in element):
+                    inside = False
                 if inside:
                     for f in factors:
                         element = element.replace(f, '')
-                    dict_det_eqn[key].append(element)
-                    dict_det_eqn[key][-1] = re.sub(r'(?<=[\+\-])\*+',
-                                                   '', dict_det_eqn[key][-1])
-                    dict_det_eqn[key][-1] = re.sub(r'(?<=\d)\*+',
-                                                   '*', dict_det_eqn[key][-1])
-                    dict_det_eqn[key][-1] = re.sub(r'\*\*+',
-                                                   '*', dict_det_eqn[key][-1])
-                    if dict_det_eqn[key][-1][-1] == "*":
-                        dict_det_eqn[key][-1] = dict_det_eqn[key][-1][:-1]
+                    value.append(element)
+                    value[-1] = re.sub(r'(?<=[\+\-])\*+','', value[-1])
+                    value[-1] = re.sub(r'(?<=\d)\*+','*', value[-1])
+                    value[-1] = re.sub(r'\*\*+','*', value[-1])
+                    if value[-1][-1] == "*":
+                        value[-1] = value[-1][:-1]
                     add = True
                     break
         if not add:
