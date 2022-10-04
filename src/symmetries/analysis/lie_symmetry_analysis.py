@@ -40,7 +40,7 @@ def point_symmetries(F, order:int, F_rules_array:dict, independent_variables:lis
     system_of_equations.rules_array_symplification()
     system_of_equations.get_common_factors()
     system_of_equations.get_determining_equations()
-    det_eqn = str_eqn_to_dict_eqn(det_eqn, all_variables, constants_and_variables)
+    system_of_equations.encode_determining_equations()
     det_eqn = simplify_redundant_eqn(det_eqn)
     # det_eqns = simplify_redundant_eqn_second_phase(det_eqns)
 

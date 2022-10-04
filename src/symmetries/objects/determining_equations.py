@@ -147,7 +147,7 @@ class determining_equations():
             XF_terms.pop(0)
         self.determining_equations = self.construct_determining_equations(self, XF_terms)
 
-    def code_determining_equations(self):
+    def encode_determining_equations(self):
         """This function transforms the string version of the determinant equations to a coded 
         dictionary format.
         """
