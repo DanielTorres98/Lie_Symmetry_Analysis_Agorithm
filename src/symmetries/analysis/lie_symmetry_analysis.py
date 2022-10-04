@@ -6,6 +6,7 @@ from symmetries.utils.symbolic import (der_relabel, group_operator,
                             sym_det_eqn)
 from symmetries.utils.latex import latex_det_eqn
 from symmetries.objects.system import system
+from symmetries.objects.determining_equations import determining_equations
 import sympy
 
 
@@ -27,14 +28,18 @@ def point_symmetries(F, order:int, F_rules_array:dict, independent_variables:lis
     #
     model.variable_relabaling()
 
+    # Initiating the determining_equations class
+    #
+    system_of_equations = determining_equations(model)
     # Applying the group operator over the function F.
     #
-    XF = group_operator(model=model)
-    XF = subs_new_vars(model.dependent_variables_partial_derivatives,
-                       model.derivatives_subscript_notation, XF)
-    XF = sympy.simplify(XF.subs(F_rules_array))
-    empty_det_eqn = get_common_factors(XF, dependent_variables, independent_variables, constants)
-    det_eqn = get_det_eqns(XF, empty_det_eqn)
+    system_of_equations.group_operator()
+    # Relabel derivatives of variables as new symbols to be able to take partial derivatives.
+    #
+    system_of_equations.variable_relabeling()
+    system_of_equations.rules_array_symplification()
+    system_of_equations.get_common_factors()
+    system_of_equations.get_determining_equations()
     det_eqn = str_eqn_to_dict_eqn(det_eqn, all_variables, constants_and_variables)
     det_eqn = simplify_redundant_eqn(det_eqn)
     # det_eqns = simplify_redundant_eqn_second_phase(det_eqns)

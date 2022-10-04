@@ -1,3 +1,9 @@
+"""This file has the structure of the class system. Which has all the information of the physical
+system to be analyzed. E.g. the differential equation, rules array, independent and dependent
+variables, etc. 
+"""
+
+import re
 import sympy
 from sympy import Derivative as D
 
@@ -7,6 +13,16 @@ from symmetries.utils.symbolic import subs_new_vars
 class system():
     def __init__(self, differential_equation, rules_array:dict,
                  independent_variables:list, dependent_variables:list, constants:list, order:int):
+        """Initialization class for system
+
+        Args:
+            differential_equation (sympy.add): Differential equation to be analyzed.
+            rules_array (dict): Differential equation solved for the higher order derivative.
+            independent_variables (list): Independent variables.
+            dependent_variables (list): Dependent variables.
+            constants (list): Constants of motion of the system.
+            order (int): Order of the differential equation.
+        """
         self.differential_equation = differential_equation
         self.rules_array = rules_array
         self.independent_variables = independent_variables
@@ -122,3 +138,88 @@ class system():
         self.differential_equation = subs_new_vars(derivatives_relabel,
                                                    self.dependent_variables_partial_derivatives,
                                                    self.differential_equation)
+
+
+def get_common_factors(XF, dependent_variables:list, independent_variables:list, constants:list):
+    """This function creates an empty dictionary where the keys
+    are all possible common factors of the determining equations.
+
+    Parameters
+    ----------
+    XF : symbolic expression
+        The Lie operator acting over a differential equation F.
+    dependent_variables : list
+        list with all dependant variables
+    independent_variables : list
+        list of all independent variables
+    constants : list
+        list with all constants
+
+    Returns
+    -------
+    dict
+        empty dictionary where the keys are the possible factorable
+        terms for the determining equations.
+    """
+    S = str(XF.expand())
+    S = S.replace(' ', '')
+    S = re.sub(r'\*{2}', "&", S)
+    S = re.sub(r'Subs\(Derivative\([(eta)(xi)\^][\w\(,\)\^]*\&*\d*', "", S)
+    S = re.sub(r'Derivative\([(eta)(xi)\^][\w\(,\)\^]*\&*\d*', "", S)
+    S = re.sub(r'[(eta)(xi)]+\^[\w\(,\)\^]+\**', "", S)
+    S = re.sub(r'Derivative', "#", S)
+    dep_var_str = [str(ele).replace(' ', '') for ele in dependent_variables]
+    for var in dep_var_str:
+        var = var.replace("(", "\(").replace(")", "\)")
+        S = re.sub(f'(?<!\(|,){var}\&*\d*', "", S)
+    indep_var_str = [str(ele).replace(' ', '') for ele in independent_variables]
+    for var in indep_var_str:
+        S = re.sub(f'(?<!\(|,){var}\&*\d*', "", S)
+    constants_str = [str(ele).replace(' ', '') for ele in constants]
+    for cte in constants_str:
+        S = re.sub(f'{cte}\&*\d*', "", S)
+    S = re.sub(r'#', "Derivative", S)
+    S = re.sub(r'\&', "^", S)
+    S = re.sub(r'\*(?=[\+\-])', "", S)
+    S = re.sub(r'(?<!\^)\d+\*', '', S)
+    S = re.sub(r'(?<=[\+\-])\*+', "", S)
+    S = re.sub(r'\*+', "*", S)
+    if S[0] == '*':
+        S = S[1:]
+    keys = re.split('\+|\-', S)
+    keys = list(dict.fromkeys(keys))
+    if '' in keys:
+        keys.remove('')
+    return dict.fromkeys(key_ordering(keys))
+
+def key_ordering(keys):
+    """Giving a list of strings it organized in a way that the each element is not completely
+    inside one of the following terms in the list.
+
+    Parameters
+    ----------
+    keys : list
+        list of no repeated strings
+
+    Returns
+    -------
+    list
+        list with the elements in order
+    """
+    keys_order = []
+    while len(keys_order) < len(keys):
+        for key_1 in keys:
+            inside = False
+            for key_2 in keys:
+                if key_2 != key_1 and (key_2 not in keys_order):
+                    k1 = key_1.split("*")
+                    counter = 0
+                    for k in k1:
+                        if k in key_2:
+                            counter += 1
+                    if counter == len(k1):
+                        inside = True
+                        break
+            if not inside and key_1 not in keys_order:
+                keys_order.append(key_1)
+    return keys_order
