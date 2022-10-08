@@ -120,25 +120,16 @@ class DeterminingEquations():
             add = False
             for key, value in self.determining_equations.items():
                 factors = key.split('*')
-                if len(factors) == 1:
-                    if key in element:
-                        value.append(element.replace(key, ''))
-                        value = self._format_value(value)
+                if all(factor in element for factor in factors):
+                    for factor in factors:
+                        element = element.replace(factor, '')
 
-                        self.determining_equations[key] = value
-                        add = True
-                        break
-                else:
-                    if all(factor in element for factor in factors):
-                        for factor in factors:
-                            element = element.replace(factor, '')
+                    value.append(element)
+                    value = self._format_value(value)
 
-                        value.append(element)
-                        value = self._format_value(value)
-
-                        self.determining_equations[key] = value
-                        add = True
-                        break
+                    self.determining_equations[key] = value
+                    add = True
+                    break
             if not add:
                 lonely_terms.append(element)
         self.determining_equations['lonely_terms'] = lonely_terms
