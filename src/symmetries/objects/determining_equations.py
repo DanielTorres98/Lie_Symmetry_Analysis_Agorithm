@@ -15,7 +15,7 @@ class DeterminingEquations():
         self.determining_equations = {}
 
     def get_group_operator(self):
-        """given a differential equation F, gives the Lie operator acting over F.
+        """Given a differential equation F, gives the Lie operator acting over F.
         """
         variables = self.model_info.independent_variables \
                     + self.model_info.dependent_variables \
@@ -125,7 +125,12 @@ class DeterminingEquations():
                         element = element.replace(factor, '')
 
                     value.append(element)
-                    value = self._format_value(value)
+                    value[-1] = re.sub(r'(?<=[\+\-])\*+','', value[-1])
+                    value[-1] = re.sub(r'(?<=\d|\))\*+','*', value[-1])
+                    value[-1] = re.sub(r'\*\*+','*', value[-1])
+
+                    if value[-1][-1] == "*":
+                        value[-1] = value[-1][:-1]
 
                     self.determining_equations[key] = value
                     add = True
@@ -133,18 +138,6 @@ class DeterminingEquations():
             if not add:
                 lonely_terms.append(element)
         self.determining_equations['lonely_terms'] = lonely_terms
-
-    @staticmethod
-    def _format_value(values: list)-> list:
-        value = deepcopy(values)
-        value[-1] = re.sub(r'(?<=[\+\-])\*+','', value[-1])
-        value[-1] = re.sub(r'(?<=\d|\))\*+','*', value[-1])
-        value[-1] = re.sub(r'\*\*+','*', value[-1])
-
-        if value[-1][-1] == "*":
-            value[-1] = value[-1][:-1]
-
-        return value
 
     def get_determining_equations(self):
         """This function gives the determinant equations in a string format
