@@ -3,6 +3,7 @@ system to be analyzed. E.g. the differential equation, rules array, independent 
 variables, etc. 
 """
 
+from copy import deepcopy
 import sympy
 from symmetries.utils.combinatorics import list_combinatorics
 
@@ -151,30 +152,12 @@ class System():
             derivatives_relabel.append(sympy.symbols(d_str))
 
         self.derivatives_subscript_notation = derivatives_relabel
-        self._subs_new_vars(derivatives_relabel, self.dependent_variables_partial_derivatives)
 
-    def _subs_new_vars(self, new_labeling, previous_labeling):
-        """Substitutes notation to another format
+        new_labeling = deepcopy(derivatives_relabel)
+        previous_labeling = deepcopy(self.dependent_variables_partial_derivatives)
 
-        Parameters
-        ----------
-        new_labeling : list
-            list with the new labeling
-        previous_labeling : list
-            list with the old symbols
-        F : sympy expression
-            expression to apply the new labeling
-
-        Returns
-        -------
-        F: sympy expression
-            expression in the new format
-        """
         new_labeling.reverse()
         previous_labeling.reverse()
 
         for new, old in zip(new_labeling, previous_labeling):
             self.differential_equation = self.differential_equation.xreplace({old: new})
-
-        new_labeling.reverse()
-        previous_labeling.reverse()
