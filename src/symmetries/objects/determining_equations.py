@@ -1,8 +1,8 @@
+"""TODO:Docstring"""
 import re
-import numpy as np
 from copy import deepcopy
 import sympy
-from sympy import Derivative as D
+import numpy as np
 from symmetries.utils.algebra import key_ordering, str_to_dict
 
 class DeterminingEquations():
@@ -22,7 +22,7 @@ class DeterminingEquations():
                     + self.model_info.derivatives_subscript_notation
         l_f = 0
         for var, inft in zip(variables, self.model_info.infinitesimals):
-            l_f += inft*D(self.model_info.differential_equation, var)
+            l_f += inft*sympy.Derivative(self.model_info.differential_equation, var)
         self.determining_equations_extended = sympy.simplify(l_f)
 
     def variable_relabeling(self):
@@ -171,5 +171,5 @@ class DeterminingEquations():
                 aux_list.append(str_to_dict(sympy.sympify(str_term), term, arr_pow,
                     arr_deriv, np.array(list_all), np.array(list_var)))
             det_eqn.append(aux_list)
-        keys = list(np.arange(len(det_eqn)))
+        keys = list(range(len(det_eqn)))
         self.determining_equations = dict(zip(keys, det_eqn))

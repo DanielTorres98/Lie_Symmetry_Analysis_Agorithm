@@ -142,12 +142,10 @@ class System():
             d_str = str(d.args[0]).split('(', maxsplit=1)[0] + '_'
             d_order = list(d.args)
             d_order.pop(0)
+
             for tup in d_order:
                 for _ in range(tup[1]):
-                    if '(' in str(tup[0]):
-                        v = str(tup[0]).split('(', maxsplit=1)[0]
-                    else:
-                        v = str(tup[0])
+                    v = str(tup[0]).split('(', maxsplit=1)[0]
                     d_str = f'{d_str}{v}'
             derivatives_relabel.append(sympy.symbols(d_str))
 
