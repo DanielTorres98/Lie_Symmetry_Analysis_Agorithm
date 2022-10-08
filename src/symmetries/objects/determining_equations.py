@@ -4,15 +4,15 @@ from copy import deepcopy
 import sympy
 from sympy import Derivative as D
 from symmetries.utils.algebra import key_ordering, str_to_dict
-from symmetries.utils.symbolic import subs_new_vars
 
 class DeterminingEquations():
     """Class"""
     def __init__(self, system, rules_array):
         self.model_info = system
+        self.rules_array = rules_array
+
         self.determining_equations_extended = ""
         self.determining_equations = {}
-        self.rules_array = rules_array
 
     def get_group_operator(self):
         """given a differential equation F, gives the Lie operator acting over F.
@@ -55,6 +55,7 @@ class DeterminingEquations():
                 self.determining_equations_extended.xreplace({old: new})
 
     def simplify_rules_array(self):
+        """TODO"""
         self.determining_equations_extended = sympy.nsimplify(
             self.determining_equations_extended.subs(self.rules_array))
 
@@ -73,7 +74,7 @@ class DeterminingEquations():
         for var in dep_var_str:
             var = var.replace("(", "\(").replace(")", "\)")
             S = re.sub(f'(?<!\(|,){var}\&*\d*', "", S)
-        indep_var_str = [str(ele).replace(' ', '') for ele in 
+        indep_var_str = [str(ele).replace(' ', '') for ele in
                          self.model_info.independent_variables]
         for var in indep_var_str:
             S = re.sub(f'(?<!\(|,){var}\&*\d*', "", S)
@@ -122,33 +123,18 @@ class DeterminingEquations():
                 if len(factors) == 1:
                     if key in element:
                         value.append(element.replace(key, ''))
-                        value[-1] = re.sub(r'(?<=[\+\-])\*+','', value[-1])
-                        value[-1] = re.sub(r'(?<=\d|\))\*+','*', value[-1])
-                        value[-1] = re.sub(r'\*\*+','*', value[-1])
-
-                        if value[-1][-1] == "*":
-                            value[-1] = value[-1][:-1]
+                        value = self._format_value(value)
 
                         self.determining_equations[key] = value
                         add = True
                         break
                 else:
-                    inside = True
-                    for f in factors:
-                        if f not in element:
-                            inside = False
-                            break
-                    if inside:
-                        for f in factors:
-                            element = element.replace(f, '')
+                    if all(factor in element for factor in factors):
+                        for factor in factors:
+                            element = element.replace(factor, '')
 
                         value.append(element)
-                        value[-1] = re.sub(r'(?<=[\+\-])\*+','', value[-1])
-                        value[-1] = re.sub(r'(?<=\d)\*+','*', value[-1])
-                        value[-1] = re.sub(r'\*\*+','*', value[-1])
-
-                        if value[-1][-1] == "*":
-                            value[-1] = value[-1][:-1]
+                        value = self._format_value(value)
 
                         self.determining_equations[key] = value
                         add = True
@@ -156,6 +142,18 @@ class DeterminingEquations():
             if not add:
                 lonely_terms.append(element)
         self.determining_equations['lonely_terms'] = lonely_terms
+
+    @staticmethod
+    def _format_value(values: list)-> list:
+        value = deepcopy(values)
+        value[-1] = re.sub(r'(?<=[\+\-])\*+','', value[-1])
+        value[-1] = re.sub(r'(?<=\d|\))\*+','*', value[-1])
+        value[-1] = re.sub(r'\*\*+','*', value[-1])
+
+        if value[-1][-1] == "*":
+            value[-1] = value[-1][:-1]
+
+        return value
 
     def get_determining_equations(self):
         """This function gives the determinant equations in a string format
