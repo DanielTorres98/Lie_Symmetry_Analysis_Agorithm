@@ -1,10 +1,8 @@
-from symmetries.utils.algebra import (get_common_factors, get_determinant_equations,
-                           simplify_redundant_eqn, str_eqn_to_dict_eqn)
+from symmetries.utils.algebra import simplify_redundant_eqn
 from symmetries.utils.symbolic import sym_det_eqn
 from symmetries.utils.latex import latex_det_eqn
-from symmetries.objects.system import system
+from symmetries.objects.system import System
 from symmetries.objects.determining_equations import determining_equations
-import sympy
 
 
 def point_symmetries(
@@ -34,10 +32,6 @@ def point_symmetries(
     # Relabel derivatives of variables as new symbols to be able to take partial derivatives.
     #
     model.variable_relabeling()
-    model.subs_new_vars(
-        new_labeling = model.derivatives_subscript_notation,
-        previous_labeling = model.dependent_variables_partial_derivatives
-    )
 
     # Initiating the determining_equations class
     #
@@ -52,7 +46,7 @@ def point_symmetries(
     system_of_equations.get_common_factors()
     system_of_equations.get_determining_equations()
     system_of_equations.encode_determining_equations()
-    det_eqn = simplify_redundant_eqn(det_eqn)
+    det_eqn = simplify_redundant_eqn(system_of_equations.determining_equations)
     # det_eqns = simplify_redundant_eqn_second_phase(det_eqns)
 
     # If latex=True prints the latex code for the determining equations.

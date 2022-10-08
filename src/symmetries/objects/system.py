@@ -6,12 +6,19 @@ variables, etc.
 import re
 import sympy
 from sympy import Derivative as D
-
 from symmetries.utils.combinatorics import list_combinatorics
+from symmetries.utils.symbolic import subs_new_vars
 
 class System():
-    def __init__(self, differential_equation, rules_array:dict,
-                 independent_variables:list, dependent_variables:list, constants:list, order:int):
+    """System of equations base class."""
+    def __init__(self,
+                differential_equation,
+                rules_array:dict,
+                independent_variables:list,
+                dependent_variables:list,
+                constants:list,
+                order:int
+        ):
         """Initialization class for system
 
         Args:
@@ -28,15 +35,17 @@ class System():
         self.dependent_variables = dependent_variables
         self.constants = constants
         self.order = order
-        self.n_independent = len(independent_variables)
-        self.n_dependent = len(dependent_variables)
+
+        # self.n_independent = len(independent_variables)
+        # self.n_dependent = len(dependent_variables)
         self.infinitesimals: list = []
         self.infinitesimals_dep: list = []
         self.infinitesimals_ind: list = []
+
         self.dependent_variables_partial_derivatives: list = []
         self.derivatives_subscript_notation: list = []
 
-    def infinitesimals_generator(self):
+    def infinitesimals_generator(self)-> None:
         """Creates the infinitesimals of the independent and dependents variables. Not the
            derivatives.
 
@@ -94,28 +103,36 @@ class System():
         deriv_infints = []
         var_combinatorics = list_combinatorics(self.independent_variables, self.order)
         for deriv_vars_order in var_combinatorics:
+
             aux_list_deriv = []
             aux_infinitesimals_of_dependent_var = []
             for idx_2, y_aux in enumerate(self.dependent_variables):
                 if len(deriv_vars_order) == 1:
                     x_aux =  deriv_vars_order[0]
+                    # y_aux = y_aux
                     eta_aux = self.infinitesimals_dep[idx_2]
+
                 else:
+                    x_aux = deriv_vars_order[-1]
                     idx_1 = var_combinatorics.index(deriv_vars_order[:-1])
                     y_aux = dep_vars_derivatives[idx_1][idx_2]
-                    x_aux = deriv_vars_order[-1]
                     eta_aux = deriv_infints[idx_1][idx_2]
+
                 aux_list_deriv.append(D(y_aux, x_aux))
                 eta_aux = eta_aux.diff(x_aux)
+
                 for i, ind_i in enumerate(self.independent_variables):
                     eta_aux -= D(y_aux, ind_i)*(
                         self.infinitesimals_ind[i].diff(x_aux))
+
                 aux_infinitesimals_of_dependent_var.append(eta_aux)
+
             dep_vars_derivatives.append(aux_list_deriv)
             deriv_infints.append(aux_infinitesimals_of_dependent_var)
 
         infts_dummy = [item for sublist in deriv_infints for item in sublist]
         dep_vars_derivatives = [item for sublist in dep_vars_derivatives for item in sublist]
+
         self.infinitesimals += infts_dummy
         self.dependent_variables_partial_derivatives = dep_vars_derivatives
 
@@ -125,6 +142,7 @@ class System():
            notation.
         """
         self.derivatives_subscript_notation = []
+        derivatives_relabel = []
         for d in self.dependent_variables_partial_derivatives:
             d_str = str(d.args[0]).split('(', maxsplit=1)[0] + '_'
             d_order = list(d.args)
@@ -138,10 +156,36 @@ class System():
                     d_str = f'{d_str}{v}'
             derivatives_relabel.append(sympy.symbols(d_str))
         self.derivatives_subscript_notation = derivatives_relabel
-        self.differential_equation = subs_new_vars(derivatives_relabel,
+        self.differential_equation = self.subs_new_vars(derivatives_relabel,
                                                    self.dependent_variables_partial_derivatives,
                                                    self.differential_equation)
+    @staticmethod
+    def subs_new_vars(new_labeling, previous_labeling, F):
+        """Substitutes notation to another format
 
+        Parameters
+        ----------
+        new_labeling : list
+            list with the new labeling
+        previous_labeling : list
+            list with the old symbols
+        F : sympy expression
+            expression to apply the new labeling
+
+        Returns
+        -------
+        F: sympy expression
+            expression in the new format
+        """
+        new_labeling.reverse()
+        previous_labeling.reverse()
+
+        for new, old in zip(new_labeling, previous_labeling):
+            F = F.xreplace({old: new})
+
+        new_labeling.reverse()
+        previous_labeling.reverse()
+        return F
 
 def get_common_factors(XF, dependent_variables:list, independent_variables:list, constants:list):
     """This function creates an empty dictionary where the keys

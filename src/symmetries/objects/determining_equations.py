@@ -8,8 +8,8 @@ from symmetries.utils.symbolic import subs_new_vars
 
 class determining_equations():
     def __init__(self, system):
-        self.model_info.system = system
-        self.determining_equations_extended = "" 
+        self.model_info = system
+        self.determining_equations_extended = ""
         self.determining_equations = {}
 
     def group_operator(self):
@@ -30,6 +30,7 @@ class determining_equations():
                                         self.model_info.dependent_variables_partial_derivatives,
                                         self.model_info.derivatives_subscript_notation,
                                         self.determining_equations_extended)
+
     def rules_array_symplification(self):
         self.determining_equations_extended = sympy.nsimplify(
             self.determining_equations_extended.subs(self.model_info.rules_array))
@@ -145,7 +146,7 @@ class determining_equations():
         XF_terms = re.split(' ', XF_string)
         if XF_terms[0] == '':
             XF_terms.pop(0)
-        self.determining_equations = self.construct_determining_equations(self, XF_terms)
+        self.construct_determining_equations(XF_terms)
 
     def encode_determining_equations(self):
         """This function transforms the string version of the determinant equations to a coded 
