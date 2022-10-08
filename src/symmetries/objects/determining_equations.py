@@ -1,39 +1,62 @@
 import re
 import numpy as np
-
+from copy import deepcopy
 import sympy
 from sympy import Derivative as D
 from symmetries.utils.algebra import key_ordering, str_to_dict
 from symmetries.utils.symbolic import subs_new_vars
 
-class determining_equations():
-    def __init__(self, system):
+class DeterminingEquations():
+    """Class"""
+    def __init__(self, system, rules_array):
         self.model_info = system
         self.determining_equations_extended = ""
         self.determining_equations = {}
+        self.rules_array = rules_array
 
-    def group_operator(self):
+    def get_group_operator(self):
         """given a differential equation F, gives the Lie operator acting over F.
         """
-        var_inft = zip(self.model_info.independent_variables + self.model_info.dependent_variables
-                       + self.model_info.derivatives_subscript_notation,
-                       self.model_info.infinitesimals)
+        variables = self.model_info.independent_variables \
+                    + self.model_info.dependent_variables \
+                    + self.model_info.derivatives_subscript_notation
         l_f = 0
-        for var, inft in var_inft:
+        for var, inft in zip(variables, self.model_info.infinitesimals):
             l_f += inft*D(self.model_info.differential_equation, var)
         self.determining_equations_extended = sympy.simplify(l_f)
 
     def variable_relabeling(self):
         """Relabels the determining equation extended version with the derivatives, subscript
-           notation"""
-        self.determining_equations_extended = subs_new_vars(
-                                        self.model_info.dependent_variables_partial_derivatives,
-                                        self.model_info.derivatives_subscript_notation,
-                                        self.determining_equations_extended)
+           notation
 
-    def rules_array_symplification(self):
+        Parameters
+        ----------
+        new_labeling : list
+            list with the new labeling
+        previous_labeling : list
+            list with the old symbols
+        F : sympy expression
+            expression to apply the new labeling
+
+        Returns
+        -------
+        F: sympy expression
+            expression in the new format
+        """
+
+        new_labeling = deepcopy(self.model_info.dependent_variables_partial_derivatives)
+        previous_labeling = deepcopy(self.model_info.derivatives_subscript_notation)
+
+        new_labeling.reverse()
+        previous_labeling.reverse()
+
+        for new, old in zip(new_labeling, previous_labeling):
+            self.determining_equations_extended = \
+                self.determining_equations_extended.xreplace({old: new})
+
+    def simplify_rules_array(self):
         self.determining_equations_extended = sympy.nsimplify(
-            self.determining_equations_extended.subs(self.model_info.rules_array))
+            self.determining_equations_extended.subs(self.rules_array))
 
     def get_common_factors(self):
         """This function adds to the determining equations dictionary the keys of all possible
@@ -85,27 +108,28 @@ class determining_equations():
         Returns
         -------
         dict
-            dictionary where in each value contains the factorized terms according to the given keys.
+            dictionary where in each value contains the factorized terms according to the given
+            keys.
         """
-        for key in self.determining_equations.keys():
+        for key in self.determining_equations:
             self.determining_equations[key] = []
+
         lonely_terms = []
         for element in XF_terms:
             add = False
-            for key in self.determining_equations:
+            for key, value in self.determining_equations.items():
                 factors = key.split('*')
                 if len(factors) == 1:
                     if key in element:
-                        self.determining_equations[key].append(element.replace(key, ''))
-                        self.determining_equations[key][-1] = re.sub(r'(?<=[\+\-])\*+',
-                                                    '', self.determining_equations[key][-1])
-                        self.determining_equations[key][-1] = re.sub(r'(?<=\d|\))\*+',
-                                                    '*', self.determining_equations[key][-1])
-                        self.determining_equations[key][-1] = re.sub(r'\*\*+',
-                                                    '*', self.determining_equations[key][-1])
-                        if self.determining_equations[key][-1][-1] == "*":
-                            self.determining_equations[key][-1] = self.determining_equations[
-                                                                                        key][-1][:-1]
+                        value.append(element.replace(key, ''))
+                        value[-1] = re.sub(r'(?<=[\+\-])\*+','', value[-1])
+                        value[-1] = re.sub(r'(?<=\d|\))\*+','*', value[-1])
+                        value[-1] = re.sub(r'\*\*+','*', value[-1])
+
+                        if value[-1][-1] == "*":
+                            value[-1] = value[-1][:-1]
+
+                        self.determining_equations[key] = value
                         add = True
                         break
                 else:
@@ -117,25 +141,24 @@ class determining_equations():
                     if inside:
                         for f in factors:
                             element = element.replace(f, '')
-                        self.determining_equations[key].append(element)
-                        self.determining_equations[key][-1] = re.sub(r'(?<=[\+\-])\*+',
-                                                    '', self.determining_equations[key][-1])
-                        self.determining_equations[key][-1] = re.sub(r'(?<=\d)\*+',
-                                                    '*', self.determining_equations[key][-1])
-                        self.determining_equations[key][-1] = re.sub(r'\*\*+',
-                                                    '*', self.determining_equations[key][-1])
-                        if self.determining_equations[key][-1][-1] == "*":
-                            self.determining_equations[key][-1] = self.determining_equations[
-                                                                                        key][-1][:-1]
+
+                        value.append(element)
+                        value[-1] = re.sub(r'(?<=[\+\-])\*+','', value[-1])
+                        value[-1] = re.sub(r'(?<=\d)\*+','*', value[-1])
+                        value[-1] = re.sub(r'\*\*+','*', value[-1])
+
+                        if value[-1][-1] == "*":
+                            value[-1] = value[-1][:-1]
+
+                        self.determining_equations[key] = value
                         add = True
                         break
             if not add:
                 lonely_terms.append(element)
         self.determining_equations['lonely_terms'] = lonely_terms
-    
+
     def get_determining_equations(self):
-        """This function gives the determinant equations
-        in a string format
+        """This function gives the determinant equations in a string format
         """
         S = str(self.determining_equations_extended.expand())
         S = S.replace(' ', '')
@@ -149,10 +172,10 @@ class determining_equations():
         self.construct_determining_equations(XF_terms)
 
     def encode_determining_equations(self):
-        """This function transforms the string version of the determinant equations to a coded 
+        """This function transforms the string version of the determinant equations to a coded
         dictionary format.
         """
-        list_all = (self.model_info.constants + self.model_info.independent_variables + 
+        list_all = (self.model_info.constants + self.model_info.independent_variables +
                     self.model_info.dependent_variables)
         list_var = self.model_info.independent_variables + self.model_info.dependent_variables
         det_eqn = []
@@ -168,4 +191,3 @@ class determining_equations():
             det_eqn.append(aux_list)
         keys = list(np.arange(len(det_eqn)))
         self.determining_equations = dict(zip(keys, det_eqn))
-
