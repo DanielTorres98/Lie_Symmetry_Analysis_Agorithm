@@ -98,16 +98,14 @@ def key_ordering(keys):
     """
     keys_order = []
     while len(keys_order) < len(keys):
-        for key_1 in keys:
+        filtered_keys = [key for key in keys if key not in keys_order]
+        for key_1 in filtered_keys:
             inside = False
-            for key_2 in keys:
-                if key_2 != key_1 and (key_2 not in keys_order):
-                    k1 = key_1.split("*")
-                    counter = sum(1 for k in k1 if k in key_2)
-                    if counter == len(k1):
-                        inside = True
-                        break
-            if not inside and key_1 not in keys_order:
+            for key_2 in filtered_keys:
+                if key_2 != key_1 and all(k in key_2 for k in key_1.split("*")):
+                    inside = True
+                    break
+            if not inside:
                 keys_order.append(key_1)
     return keys_order
 
