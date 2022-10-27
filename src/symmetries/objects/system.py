@@ -7,15 +7,17 @@ from copy import deepcopy
 import sympy
 from symmetries.utils.combinatorics import list_combinatorics
 
+
 class System():
     """System of equations base class."""
+
     def __init__(self,
-                differential_equation,
-                independent_variables:list,
-                dependent_variables:list,
-                constants:list,
-                order:int
-        ):
+                 differential_equation,
+                 independent_variables: list,
+                 dependent_variables: list,
+                 constants: list,
+                 order: int
+                 ):
         """Initialization class for system
 
         Args:
@@ -42,7 +44,7 @@ class System():
         self.dependent_variables_partial_derivatives: list = []
         self.derivatives_subscript_notation: list = []
 
-    def infinitesimals_generator(self)-> None:
+    def infinitesimals_generator(self) -> None:
         """Creates the infinitesimals of the independent and dependents variables. Not the
            derivatives.
 
@@ -63,12 +65,12 @@ class System():
         ind_infts = []
         for var in self.independent_variables:
             fun = sympy.Function(f'xi^{var}')
-            ind_infts.append(fun(*variables)) # pylint: disable=E1102
+            ind_infts.append(fun(*variables))  # pylint: disable=E1102
 
         dep_infts = []
         for var in self.dependent_variables:
             fun = sympy.Function(f'eta^{var}'.split('(')[0])
-            dep_infts.append(fun(*variables)) # pylint: disable=E1102
+            dep_infts.append(fun(*variables))  # pylint: disable=E1102
 
         self.infinitesimals = ind_infts+dep_infts
         self.infinitesimals_ind = ind_infts
@@ -98,14 +100,15 @@ class System():
         """
         dep_vars_derivatives = []
         deriv_infints = []
-        var_combinatorics = list_combinatorics(self.independent_variables, self.order)
+        var_combinatorics = list_combinatorics(
+            self.independent_variables, self.order)
         for deriv_vars_order in var_combinatorics:
 
             aux_list_deriv = []
             aux_infinitesimals_of_dependent_var = []
             for idx_2, y_aux in enumerate(self.dependent_variables):
                 if len(deriv_vars_order) == 1:
-                    x_aux =  deriv_vars_order[0]
+                    x_aux = deriv_vars_order[0]
                     # y_aux = y_aux
                     eta_aux = self.infinitesimals_dep[idx_2]
 
@@ -128,7 +131,8 @@ class System():
             deriv_infints.append(aux_infinitesimals_of_dependent_var)
 
         infts_dummy = [item for sublist in deriv_infints for item in sublist]
-        dep_vars_derivatives = [item for sublist in dep_vars_derivatives for item in sublist]
+        dep_vars_derivatives = [
+            item for sublist in dep_vars_derivatives for item in sublist]
 
         self.infinitesimals += infts_dummy
         self.dependent_variables_partial_derivatives = dep_vars_derivatives
@@ -152,10 +156,12 @@ class System():
         self.derivatives_subscript_notation = derivatives_relabel
 
         new_labeling = deepcopy(derivatives_relabel)
-        previous_labeling = deepcopy(self.dependent_variables_partial_derivatives)
+        previous_labeling = deepcopy(
+            self.dependent_variables_partial_derivatives)
 
         new_labeling.reverse()
         previous_labeling.reverse()
 
         for new, old in zip(new_labeling, previous_labeling):
-            self.differential_equation = self.differential_equation.xreplace({old: new})
+            self.differential_equation = self.differential_equation.xreplace({
+                                                                             old: new})
