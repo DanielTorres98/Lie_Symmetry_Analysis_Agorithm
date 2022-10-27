@@ -5,11 +5,12 @@ from symmetries.objects.system import System
 from symmetries.objects.determining_equations import DeterminingEquations
 from symmetries.utils.symbolic import sym_det_eqn
 
+
 class GeneralForm():
-    def __init__(self, system: System, model:DeterminingEquations)  -> None:
+    def __init__(self, system: System, model: DeterminingEquations) -> None:
         self.system = system
         self.model = model
-        self.general_form = dict
+        self.general_form = self.obtain_general_form()
 
     def obtain_general_form(self):
         general_form = {}
@@ -22,16 +23,18 @@ class GeneralForm():
             else:
                 general_form[l[0]][l[1]] = deepcopy(self.model.all_variables)
 
-        self.general_form = general_form
+        return general_form
 
     def find_first_derivative_equals_0(self):
         to_delete = []
         for k, v in self.system.determining_equations.items():
-            if len(v)==1:
+            if len(v) == 1:
                 l = v[0]
-                if sum(l['derivatives'])==1:
-                    var = [self.model.all_variables[n] for n, d in enumerate(l['derivatives']) if d][0]
-                    self.general_form[l['variable'][:-1]][l['variable'][-1]].remove(var)
+                if sum(l['derivatives']) == 1:
+                    var = [self.model.all_variables[n]
+                           for n, d in enumerate(l['derivatives']) if d][0]
+                    self.general_form[l['variable'][:-1]
+                                      ][l['variable'][-1]].remove(var)
                     to_delete.append(k)
 
         for k in to_delete:
@@ -39,7 +42,7 @@ class GeneralForm():
 
     def print_matrix(self):
         return sym_det_eqn(
-            self.system.determining_equations, 
-            self.model.independent_variables, 
-            self.model.dependent_variables, 
+            self.system.determining_equations,
+            self.model.independent_variables,
+            self.model.dependent_variables,
             self.model.constants)
