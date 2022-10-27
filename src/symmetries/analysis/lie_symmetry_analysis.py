@@ -70,4 +70,4 @@ def point_symmetries(
         latex_code = latex_code.replace("+-", "-")
         return print(latex_code)
 
-    return sym_det_eqn(det_eqn, independent_variables, dependent_variables, constants)
+    return model, system_of_equations
