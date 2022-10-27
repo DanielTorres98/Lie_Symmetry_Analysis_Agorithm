@@ -1,4 +1,3 @@
-from symmetries.utils.algebra import simplify_redundant_eqn
 from symmetries.utils.symbolic import sym_det_eqn
 from symmetries.utils.latex import latex_det_eqn
 from symmetries.objects.system import System
@@ -7,20 +6,20 @@ from symmetries.objects.determining_equations import DeterminingEquations
 
 def point_symmetries(
     differential_equation,
-    order:int,
-    f_rules_array:dict,
-    independent_variables:list,
-    dependent_variables:list,
-    constants:list,
-    latex:bool=False
+    order: int,
+    f_rules_array: dict,
+    independent_variables: list,
+    dependent_variables: list,
+    constants: list,
+    latex: bool = False
 ):
 
     model = System(
         differential_equation=differential_equation,
-        order=order,
         independent_variables=independent_variables,
         dependent_variables=dependent_variables,
         constants=constants,
+        order=order,
     )
     # This section of the code generates the infitesimals for all the independent variables and
     # dependent variables.
@@ -48,9 +47,9 @@ def point_symmetries(
     system_of_equations.get_common_factors()
     system_of_equations.get_determining_equations()
     system_of_equations.encode_determining_equations()
-    det_eqn = simplify_redundant_eqn(system_of_equations.determining_equations)
-    # det_eqns = simplify_redundant_eqn_second_phase(det_eqns)
+    system_of_equations.simplify_redundant_equations()
 
+    det_eqn = system_of_equations.determining_equations
     # If latex=True prints the latex code for the determining equations.
     #
     # TODO: Fix Latex printing
@@ -66,7 +65,9 @@ def point_symmetries(
                 latex_dict[f'xse{str(index+1)}'] = f'xi^{"{"}{backslash_char}{variable}'
             else:
                 latex_dict[f'xse{str(index+1)}'] = f'xi^{"{"}{variable}{"}"}'
-        latex_code = latex_det_eqn(det_eqn, latex_dict, all_variables, constants)
+        latex_code = latex_det_eqn(
+            det_eqn, latex_dict, all_variables, constants)
         latex_code = latex_code.replace("+-", "-")
         return print(latex_code)
+
     return sym_det_eqn(det_eqn, independent_variables, dependent_variables, constants)

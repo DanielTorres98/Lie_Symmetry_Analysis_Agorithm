@@ -3,7 +3,7 @@ import re
 from copy import deepcopy
 import sympy
 import numpy as np
-from symmetries.utils.algebra import key_ordering, str_to_dict
+from symmetries.utils.algebra import key_ordering, str_to_dict, is_zero
 
 class DeterminingEquations():
     """Class"""
@@ -173,3 +173,35 @@ class DeterminingEquations():
             det_eqn.append(aux_list)
         keys = list(range(len(det_eqn)))
         self.determining_equations = dict(zip(keys, det_eqn))
+
+    def simplify_redundant_equations(self):
+        """given a dict of equations reduces the set by eliminating redundant equations. It is just a
+        test to try the logic far from being ready yet
+
+        Parameters
+        ----------
+        det_eqns : dict
+        """
+        simplify = True
+        exit_param = 0
+        zero_terms = {}
+        det_eqns_aux = deepcopy(self.determining_equations)
+        while simplify:
+            for idx, eqn in det_eqns.items():
+                for _, zero in zero_terms.items():
+                    for term in eqn:
+                        if is_zero(zero, term) and term in det_eqns_aux[idx]:
+                            det_eqns_aux[idx][det_eqns_aux[idx].index(term)] = 0
+                            exit_param = 0
+                    det_eqns_aux[idx] = list(
+                        filter(lambda num: num != 0, det_eqns_aux[idx]))
+                    exit_param += 1
+                if len(det_eqns_aux[idx]) == 1:
+                    zero_terms[idx] = det_eqns_aux[idx][0]
+                if exit_param > len(det_eqns):
+                    simplify = False
+            det_eqns = deepcopy(det_eqns_aux)
+        simplify_det_eqns = {k: v for k, v in det_eqns.items() if v}
+        for idx in zero_terms:
+            simplify_det_eqns[idx] = [zero_terms[idx]]
+        return simplify_det_eqns
