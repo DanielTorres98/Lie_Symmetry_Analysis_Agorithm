@@ -3,7 +3,7 @@
     "original":
     ["hey", "hey no", "no", "you", "yourself"],
     "result":
-    ["hey no", "no", "yourself", "hey", "you"]
+    ["hey no", "yourself", "hey", "no", "you"]
     },
     {
     "original":
