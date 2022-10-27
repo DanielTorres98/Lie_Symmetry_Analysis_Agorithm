@@ -8,9 +8,10 @@ from symmetries.utils.symbolic import sym_det_eqn
 
 class GeneralForm():
     def __init__(self, system: System, model: DeterminingEquations) -> None:
-        self.system = system
         self.model = model
         self.general_form = self.obtain_general_form()
+        self.determining_equations = deepcopy(system.determining_equations)
+        self.deleted = {}
 
     def obtain_general_form(self):
         general_form = {}
@@ -26,23 +27,42 @@ class GeneralForm():
         return general_form
 
     def find_first_derivative_equals_0(self):
-        to_delete = []
-        for k, v in self.system.determining_equations.items():
+        for k, v in self.determining_equations.items():
             if len(v) == 1:
                 l = v[0]
                 if sum(l['derivatives']) == 1:
                     var = [self.model.all_variables[n]
-                           for n, d in enumerate(l['derivatives']) if d][0]
-                    self.general_form[l['variable'][:-1]
-                                      ][l['variable'][-1]].remove(var)
-                    to_delete.append(k)
+                        for n, d in enumerate(l['derivatives']) if d][0]
+                    if not (l['variable'] in self.deleted and var in self.deleted[l['variable']]):
+                        self.general_form[l['variable'][:-1]
+                                        ][l['variable'][-1]].remove(var)
+                        if l['variable'] not in self.deleted:
+                            self.deleted[l['variable']] = [var]
+                            print('deleting', l['variable'], var)
+                        else:
+                            self.deleted[l['variable']].append(var)
 
-        for k in to_delete:
-            del self.system.determining_equations[k]
 
+    def find_deleted_items_in_equations(self):
+        for k, v in self.determining_equations.items():
+            if len(v) > 1:
+                values = deepcopy(v)
+                for item in values:
+                    if item['variable'] in self.deleted:
+                        var = [self.model.all_variables[n]
+                                for n, d in enumerate(item['derivatives']) if d][0]
+                        if var in self.deleted[item['variable']]:
+                            print('found', var, 'in', item['variable'], 'eq', k)
+                            v.remove(item)
+
+    def delete_second_derivatives():
+        pass
+                            
     def print_matrix(self):
+        print('general form:', self.general_form)
+        print('already deleted:', self.deleted)
         return sym_det_eqn(
-            self.system.determining_equations,
+            self.determining_equations,
             self.model.independent_variables,
             self.model.dependent_variables,
             self.model.constants)
