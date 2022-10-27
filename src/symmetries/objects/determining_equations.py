@@ -164,10 +164,9 @@ class DeterminingEquations():
         """This function transforms the string version of the determinant equations to a coded
         dictionary format.
         """
-        list_all = (self.model_info.constants + self.model_info.independent_variables +
-                    self.model_info.dependent_variables)
         list_var = self.model_info.independent_variables + \
             self.model_info.dependent_variables
+        list_all = self.model_info.constants + list_var
         det_eqn = []
         for eqn in self.determining_equations.values():
             aux_list = []
@@ -189,6 +188,7 @@ class DeterminingEquations():
         simplify = True
         exit_param = 0
         zero_terms = {}
+        det_eqns = self.determining_equations
         det_eqns_aux = deepcopy(self.determining_equations)
         while simplify:
             for idx, eqn in det_eqns.items():
