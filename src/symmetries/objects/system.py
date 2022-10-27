@@ -32,6 +32,7 @@ class System():
         # self.rules_array = rules_array
         self.independent_variables = independent_variables
         self.dependent_variables = dependent_variables
+        self.all_variables = independent_variables + dependent_variables
         self.constants = constants
         self.order = order
 
@@ -60,17 +61,15 @@ class System():
         list
             list with the infinitesimals.
         """
-        variables = self.independent_variables + self.dependent_variables
-
         ind_infts = []
         for var in self.independent_variables:
             fun = sympy.Function(f'xi^{var}')
-            ind_infts.append(fun(*variables))  # pylint: disable=E1102
+            ind_infts.append(fun(*self.all_variables))  # pylint: disable=E1102
 
         dep_infts = []
         for var in self.dependent_variables:
             fun = sympy.Function(f'eta^{var}'.split('(')[0])
-            dep_infts.append(fun(*variables))  # pylint: disable=E1102
+            dep_infts.append(fun(*self.all_variables))  # pylint: disable=E1102
 
         self.infinitesimals = ind_infts+dep_infts
         self.infinitesimals_ind = ind_infts
