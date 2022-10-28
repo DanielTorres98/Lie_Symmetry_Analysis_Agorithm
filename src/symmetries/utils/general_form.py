@@ -55,8 +55,18 @@ class GeneralForm():
                             print('found', var, 'in', item['variable'], 'eq', k)
                             v.remove(item)
 
-    def delete_second_derivatives():
-        pass
+    def delete_second_derivatives(self):
+        det_eqns = deepcopy(self.determining_equations)
+        for k, v in det_eqns.items():
+                values = deepcopy(v)
+                for item in values:
+                    if item['variable'] in self.deleted:
+                        for var, order in zip(self.model.all_variables, item['derivatives']):
+                            if var in self.deleted[item['variable']] and order>1:
+                                print('found', var, 'in', item['variable'], 'eq', k)
+                                v.remove(item)
+                                if len(v)==0:
+                                    del self.determining_equations[k]
                             
     def print_matrix(self):
         print('general form:', self.general_form)
