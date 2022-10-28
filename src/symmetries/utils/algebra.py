@@ -4,9 +4,9 @@ import re
 import numpy as np
 import sympy
 
-from .DEint import compare_derivatives, drop_constants
+from symmetries.utils.DEint import compare_derivatives, drop_constants
 
-def is_zero(zero_term, term):
+def is_zero(zero_term:dict, term:dict):
     """Given a term that is zero, returns true if
        term is zero as well.
 
@@ -29,7 +29,7 @@ def is_zero(zero_term, term):
         compare_derivatives(zero_term['derivatives'], term['derivatives'])
 
 
-def get_common_factors(XF, list_dep, list_indep, constants):
+def get_common_factors(XF, dependent_variables:list, independent_variables:list, constants:list):
     """This function creates an empty dictionary where the keys
     are all possible common factors of the determining equations.
 
@@ -37,9 +37,9 @@ def get_common_factors(XF, list_dep, list_indep, constants):
     ----------
     XF : symbolic expression
         The Lie operator acting over a differential equation F.
-    list_dep : list
+    dependent_variables : list
         list with all dependant variables
-    list_indep : list
+    independent_variables : list
         list of all independent variables
     constants : list
         list with all constants
@@ -57,11 +57,11 @@ def get_common_factors(XF, list_dep, list_indep, constants):
     S = re.sub(r'Derivative\([(eta)(xi)\^][\w\(,\)\^]*\&*\d*', "", S)
     S = re.sub(r'[(eta)(xi)]+\^[\w\(,\)\^]+\**', "", S)
     S = re.sub(r'Derivative', "#", S)
-    dep_var_str = [str(ele).replace(' ', '') for ele in list_dep]
+    dep_var_str = [str(ele).replace(' ', '') for ele in dependent_variables]
     for var in dep_var_str:
         var = var.replace("(", "\(").replace(")", "\)")
         S = re.sub(f'(?<!\(|,){var}\&*\d*', "", S)
-    indep_var_str = [str(ele).replace(' ', '') for ele in list_indep]
+    indep_var_str = [str(ele).replace(' ', '') for ele in independent_variables]
     for var in indep_var_str:
         S = re.sub(f'(?<!\(|,){var}\&*\d*', "", S)
     constants_str = [str(ele).replace(' ', '') for ele in constants]
@@ -98,24 +98,19 @@ def key_ordering(keys):
     """
     keys_order = []
     while len(keys_order) < len(keys):
-        for key_1 in keys:
+        filtered_keys = [key for key in keys if key not in keys_order]
+        for key_1 in filtered_keys:
             inside = False
-            for key_2 in keys:
-                if key_2 != key_1 and (key_2 not in keys_order):
-                    k1 = key_1.split("*")
-                    counter = 0
-                    for k in k1:
-                        if k in key_2:
-                            counter += 1
-                    if counter == len(k1):
-                        inside = True
-                        break
-            if not inside and key_1 not in keys_order:
+            for key_2 in filtered_keys:
+                if key_2 != key_1 and all(k in key_2 for k in key_1.split("*")):
+                    inside = True
+                    break
+            if not inside:
                 keys_order.append(key_1)
     return keys_order
 
 
-def get_det_eqns(XF, dict_det_eqn):
+def get_determinant_equations(XF, dict_det_eqn):
     """This function gives the determinant equations
     in a string format
 
@@ -163,42 +158,35 @@ def group_terms(dict_det_eqn, XF_terms):
     """
     for key in dict_det_eqn.keys():
         dict_det_eqn[key] = []
+
     lonely_terms = []
     for element in XF_terms:
         add = False
-        for key in dict_det_eqn:
+        for key, value in dict_det_eqn.items():
             factors = key.split('*')
             if len(factors) == 1:
                 if key in element:
-                    dict_det_eqn[key].append(element.replace(key, ''))
-                    dict_det_eqn[key][-1] = re.sub(r'(?<=[\+\-])\*+',
-                                                   '', dict_det_eqn[key][-1])
-                    dict_det_eqn[key][-1] = re.sub(r'(?<=\d|\))\*+',
-                                                   '*', dict_det_eqn[key][-1])
-                    dict_det_eqn[key][-1] = re.sub(r'\*\*+',
-                                                   '*', dict_det_eqn[key][-1])
-                    if dict_det_eqn[key][-1][-1] == "*":
-                        dict_det_eqn[key][-1] = dict_det_eqn[key][-1][:-1]
+                    value.append(element.replace(key, ''))
+                    value[-1] = re.sub(r'(?<=[\+\-])\*+','', value[-1])
+                    value[-1] = re.sub(r'(?<=\d|\))\*+','*', value[-1])
+                    value[-1] = re.sub(r'\*\*+','*', value[-1])
+                    if value[-1][-1] == "*":
+                        value[-1] = value[-1][:-1]
                     add = True
                     break
             else:
                 inside = True
-                for f in factors:
-                    if f not in element:
-                        inside = False
-                        break
+                if any(True for f in factors if f not in element):
+                    inside = False
                 if inside:
                     for f in factors:
                         element = element.replace(f, '')
-                    dict_det_eqn[key].append(element)
-                    dict_det_eqn[key][-1] = re.sub(r'(?<=[\+\-])\*+',
-                                                   '', dict_det_eqn[key][-1])
-                    dict_det_eqn[key][-1] = re.sub(r'(?<=\d)\*+',
-                                                   '*', dict_det_eqn[key][-1])
-                    dict_det_eqn[key][-1] = re.sub(r'\*\*+',
-                                                   '*', dict_det_eqn[key][-1])
-                    if dict_det_eqn[key][-1][-1] == "*":
-                        dict_det_eqn[key][-1] = dict_det_eqn[key][-1][:-1]
+                    value.append(element)
+                    value[-1] = re.sub(r'(?<=[\+\-])\*+','', value[-1])
+                    value[-1] = re.sub(r'(?<=\d)\*+','*', value[-1])
+                    value[-1] = re.sub(r'\*\*+','*', value[-1])
+                    if value[-1][-1] == "*":
+                        value[-1] = value[-1][:-1]
                     add = True
                     break
         if not add:
@@ -328,7 +316,6 @@ def str_to_dict(f, term, arr_pow, arr_deriv, list_all, list_var):
     term['constants'] = list(arr_pow.astype(int))
     term['derivatives'] = list(arr_deriv.astype(int))
     return term
-
 
 def parens(s):
     i = s.count(')') - 1

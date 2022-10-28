@@ -25,9 +25,12 @@ def get_terms(equation: str):
         equation written in a string form.
     """
     equation = equation.replace('+','-')
+    
     # Break the equation into it's terms
+    #
     term_list = equation.split('-')
     # Now strip the whitespace
+    #
     terms = [term.strip(' ') for term in term_list]
     if terms[0] == '':
         terms.pop(0)
@@ -102,18 +105,23 @@ def process_term(term, constant_list, var_list):
         list with the constants of the set of original differential equations
     """
     # First need to separate coefficients
+    #
     parts = term.split('*')
+
     # Make the numerical coefficient into an integer
+    #
     if len(parts) > 1:
         try:
             parts[0] = int(parts[0])
         except:
-        # Here we catch any greek letters, and then put an integer of 1 at the beginning
-        # of the list
+            # Here we catch any greek letters, and then put an integer of 1 at the beginning
+            # of the list
+            #
             parts[0] = parts[0].strip('(')
             parts = [1] + parts
 
     # Need to strip in 2 stages as to not delete the function information
+    #
     var_str = ''
     for k in range(1, len(var_list)):
         var_str = var_str + 'z' + str(k) + ', '
@@ -122,6 +130,7 @@ def process_term(term, constant_list, var_list):
     greek_list = []
     if len(parts) > 2:
         # At this point we definitely have a greek letter: print(parts[1:-1])
+        #
         for constant in constant_list:
             i = 0
             # In general we have something like 'η^2'.

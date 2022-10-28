@@ -1,46 +1,72 @@
-from symmetries.utils.algebra import (get_common_factors, get_det_eqns,
-                           simplify_redundant_eqn, str_eqn_to_dict_eqn)
-from symmetries.utils.symbolic import (der_relabel, group_operator,
-                            higher_infinitesimals_generator,
-                            infinitesimals_generator, subs_new_vars,
-                            sym_det_eqn)
+from symmetries.utils.algebra import simplify_redundant_eqn
+from symmetries.utils.symbolic import sym_det_eqn
 from symmetries.utils.latex import latex_det_eqn
-import sympy as sp
+from symmetries.objects.system import System
+from symmetries.objects.determining_equations import DeterminingEquations
 
 
-def point_symmetries(F, order, F_rules_array, list_indep, list_dep, list_cte, latex=False):
-    list_var = list_indep + list_dep
-    list_all = list_cte + list_indep + list_dep
-    latex_dict = {}
-    # for i in range(0, N_indep):
-    #     if len(var_list[i]) > 1:
-    #         latex_dict['xse' + str(i+1)] = 'xi^' + \
-    #             '{' + "\\" + var_list[i] + '}'
-    #     else:
-    #         latex_dict['xse' + str(i+1)] = 'xi^' + "{" + var_list[i] + '}'
-    infts = infinitesimals_generator(list_indep, list_dep)
-    n_indep = len(list_indep)
-    n_dep = len(list_dep)
-    infts_ind = infts[0:n_indep]
-    infts_dep = infts[n_indep:(n_dep + n_indep)]
-    inft_derivatives, dep_vars_derivatives = higher_infinitesimals_generator(infts_ind, infts_dep,
-                                                                             order, list_indep, list_dep)
-    infts_dummy = [item for sublist in inft_derivatives for item in sublist]
-    dep_vars_derivatives = [item for sublist in dep_vars_derivatives for item in sublist]
-    infts = infts + infts_dummy
-    F, deriv_names = der_relabel(dep_vars_derivatives, F)
-    vars_and_derivatives = list_indep + list_dep + deriv_names
-    XF = group_operator(F, vars_and_derivatives, infts)
-    XF = subs_new_vars(dep_vars_derivatives, deriv_names, XF)
-    XF = sp.simplify(XF.subs(F_rules_array))
-    empty_det_eqn = get_common_factors(XF, list_dep, list_indep, list_cte)
-    det_eqn = get_det_eqns(XF, empty_det_eqn)
-    det_eqn = str_eqn_to_dict_eqn(det_eqn, list_var, list_all)
-    det_eqn = simplify_redundant_eqn(det_eqn)
+def point_symmetries(
+    differential_equation,
+    order:int,
+    f_rules_array:dict,
+    independent_variables:list,
+    dependent_variables:list,
+    constants:list,
+    latex:bool=False
+):
+
+    model = System(
+        differential_equation=differential_equation,
+        order=order,
+        independent_variables=independent_variables,
+        dependent_variables=dependent_variables,
+        constants=constants,
+    )
+    # This section of the code generates the infitesimals for all the independent variables and
+    # dependent variables.
+    #
+    model.infinitesimals_generator()
+    model.higher_infinitesimals_generator()
+
+    # Relabel derivatives of variables as new symbols to be able to take partial derivatives.
+    #
+    model.variable_relabeling()
+
+    # Initiating the determining_equations class
+    #
+    system_of_equations = DeterminingEquations(
+        system=model,
+        rules_array=f_rules_array,
+    )
+    # Applying the group operator over the function F.
+    #
+    system_of_equations.get_group_operator()
+    # Relabel derivatives of variables as new symbols to be able to take partial derivatives.
+    #
+    system_of_equations.variable_relabeling()
+    system_of_equations.simplify_rules_array()
+    system_of_equations.get_common_factors()
+    system_of_equations.get_determining_equations()
+    system_of_equations.encode_determining_equations()
+    det_eqn = simplify_redundant_eqn(system_of_equations.determining_equations)
     # det_eqns = simplify_redundant_eqn_second_phase(det_eqns)
-    # if latex:
-    #     latex_code = latex_det_eqn(det_eqns,
-    #                     latex_dict, list_var, list_cte)
-    #     latex_code = latex_code.replace("+-", "-")
-    #     return print(latex_code)
-    return sym_det_eqn(det_eqn, list_indep, list_dep, list_cte)
+
+    # If latex=True prints the latex code for the determining equations.
+    #
+    # TODO: Fix Latex printing
+    #
+    if latex:
+        all_variables = independent_variables+dependent_variables+constants
+        backslash_char = "\\"
+        latex_dict = {}
+        for index, variable in enumerate(independent_variables):
+            # If the string length of the variable is bigger than one assumes it is a greek letter.
+            #
+            if len(str(variable)) > 1:
+                latex_dict[f'xse{str(index+1)}'] = f'xi^{"{"}{backslash_char}{variable}'
+            else:
+                latex_dict[f'xse{str(index+1)}'] = f'xi^{"{"}{variable}{"}"}'
+        latex_code = latex_det_eqn(det_eqn, latex_dict, all_variables, constants)
+        latex_code = latex_code.replace("+-", "-")
+        return print(latex_code)
+    return sym_det_eqn(det_eqn, independent_variables, dependent_variables, constants)
