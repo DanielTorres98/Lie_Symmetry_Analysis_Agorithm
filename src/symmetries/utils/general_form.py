@@ -7,7 +7,7 @@ from symmetries.utils.symbolic import sym_det_eqn
 
 
 class GeneralForm():
-    def __init__(self, system: System, model: DeterminingEquations) -> None:
+    def __init__(self, model: System, system: DeterminingEquations) -> None:
         self.model = model
         self.general_form = self.obtain_general_form()
         self.determining_equations = deepcopy(system.determining_equations)
