@@ -39,7 +39,6 @@ class GeneralForm():
         """Finds equations in the determining equations that contain a single term that is a first
         derivative of a given variable and stores it in a dictionary that contains deleted
         dependencies called deleted."""
-
         for v in self.determining_equations.values():
             if len(v) == 1:
                 l = v[0]
@@ -60,19 +59,33 @@ class GeneralForm():
         """Searches in the determining equations for equations that contain a term that is an
         already identified first derivative equals 0 or higher order or cross derivative of the
         same."""
-
-        for k, v in self.determining_equations.items():
-            if len(v) > 1:
-                values = deepcopy(v)
+        for k, eq in self.determining_equations.items():
+            if len(eq) > 1:
+                values = deepcopy(eq)
                 for item in values:
                     if item['variable'] in self.deleted:
-                        for var, order in zip(self.model.all_variables, item['derivatives']):
-                            if var in self.deleted[item['variable']] and order > 0 and item in v:
-                                print('found', var, 'in',
+                        for variable, order in zip(self.model.all_variables, item['derivatives']):
+                            if (variable in self.deleted[item['variable']]
+                            ) and order and (item in eq):
+                                print('found', variable, 'in',
                                       item['variable'], 'eq', k)
-                                v.remove(item)
-                                if len(v) == 0:
-                                    del self.determining_equations[k]
+                                eq.remove(item)
+
+    def delete_second_derivatives(self):
+        """Similarly to find_deleted_items_in_equations, the method iterates over the system of
+        equations, finds equations containing single higher order derivatives and deletes them
+        from the system.
+        Note: this is a separate method because it modifies the iterator."""
+        det_eqns = deepcopy(self.determining_equations)
+        for k, eq in det_eqns.items():
+            if len(eq) == 1:
+                item = eq[0]  # there is only a single term in the equation
+                if item['variable'] in self.deleted:
+                    for variable, order in zip(self.model.all_variables, item['derivatives']):
+                        if variable in self.deleted[item['variable']] and order > 1:
+                            print('found derivative of', variable,
+                                  'in', item['variable'], 'eq', k)
+                            del self.determining_equations[k]
 
     def print_matrix(self):
         print('general form:', self.general_form)  # pretty print this as sympy
@@ -80,36 +93,14 @@ class GeneralForm():
         return self.print_symbolic_equations(self.determining_equations)
 
     def print_symbolic_equations(self, equations):
-        """Gives the symbolic version of remaining
-        determining equation.
+        """Gives the symbolic version of remaining determining equation.
 
         Parameters
         ----------
         det_eqn : dict
             dictionary will all the determining equations.
         """
-        var_dict = {}
-
-        indep_var_str = [str(ele).replace(' ', '')
-                         for ele in self.model.independent_variables]
-        for dep_var in indep_var_str:
-            var = dep_var.split('(')[0]
-            if len(var) > 1:
-                var_dict[f'xi{var}'] = 'eta^' + \
-                    '(' + "\\" + var + ')'
-            else:
-                var_dict[f'xi{var}'] = f'xi^({var})'
-
-        dep_var_str = [str(ele).replace(' ', '')
-                       for ele in self.model.dependent_variables]
-        for dep_var in dep_var_str:
-            var = dep_var.split('(')[0]
-            if len(var) > 1:
-                var_dict[f'eta{var}'] = 'eta^' + \
-                    '(' + "\\" + var + ')'
-            else:
-                var_dict[f'eta{var}'] = f'eta^({var})'
-
+        var_dict = self.parse_variables()
         matrix = sympy.Matrix([[]])
         for i, eqn in enumerate(equations.values()):
             matrix = matrix.row_insert(i,
@@ -118,3 +109,30 @@ class GeneralForm():
                                        ), 0)]])
                                        )
         return matrix
+
+    def parse_variables(self):
+        """Creates dictionary with translation to symbolic terms of variables.
+
+        Returns
+        -------
+        dictionary
+            xit = xi^(t)
+        """
+        var_dict = {}
+
+        indep_var_str = [str(ele).replace(' ', '')
+                         for ele in self.model.independent_variables]
+        for dep_var in indep_var_str:
+            var = dep_var.split('(')[0]
+            if len(var) > 1:
+                var_dict[f'xi{var}'] = f'eta^({var})'
+            else:
+                var_dict[f'xi{var}'] = f'xi^({var})'
+
+        dep_var_str = [str(ele).replace(' ', '')
+                       for ele in self.model.dependent_variables]
+        for dep_var in dep_var_str:
+            var = dep_var.split('(')[0]
+            var_dict[f'eta{var}'] = f'eta^({var})'
+
+        return var_dict
