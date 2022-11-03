@@ -90,9 +90,9 @@ class GeneralForm():
     def print_matrix(self):
         print('general form:', self.general_form)  # pretty print this as sympy
         print('already deleted:', self.deleted)
-        return self.print_symbolic_equations(self.determining_equations)
+        return self.print_symbolic_equations()
 
-    def print_symbolic_equations(self, equations):
+    def print_symbolic_equations(self):
         """Gives the symbolic version of remaining determining equation.
 
         Parameters
@@ -102,12 +102,12 @@ class GeneralForm():
         """
         var_dict = self.parse_variables()
         matrix = sympy.Matrix([[]])
-        for i, eqn in enumerate(equations.values()):
+        for i, eqn in enumerate(self.determining_equations.values()):
             matrix = matrix.row_insert(i,
-                                       sympy.Matrix([[i, sympy.Eq(get_symbolic_terms(
-                                           eqn, var_dict, self.model.constants, self.model.all_variables
-                                       ), 0)]])
-                                       )
+                            sympy.Matrix([[i, sympy.Eq(get_symbolic_terms(
+                                eqn, var_dict, self.model.constants, self.model.all_variables
+                            ), 0)]])
+                            )
         return matrix
 
     def parse_variables(self):
