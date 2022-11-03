@@ -3,10 +3,12 @@ import re
 from copy import deepcopy
 import sympy
 import numpy as np
-from symmetries.utils.algebra import key_ordering, str_to_dict
+from symmetries.utils.algebra import key_ordering, str_to_dict, is_zero
+
 
 class DeterminingEquations():
     """Class"""
+
     def __init__(self, system, rules_array):
         self.model_info = system
         self.rules_array = rules_array
@@ -18,11 +20,12 @@ class DeterminingEquations():
         """Given a differential equation F, gives the Lie operator acting over F.
         """
         variables = self.model_info.independent_variables \
-                    + self.model_info.dependent_variables \
-                    + self.model_info.derivatives_subscript_notation
+            + self.model_info.dependent_variables \
+            + self.model_info.derivatives_subscript_notation
         l_f = 0
         for var, inft in zip(variables, self.model_info.infinitesimals):
-            l_f += inft*sympy.Derivative(self.model_info.differential_equation, var)
+            l_f += inft * \
+                sympy.Derivative(self.model_info.differential_equation, var)
         self.determining_equations_extended = sympy.simplify(l_f)
 
     def variable_relabeling(self):
@@ -44,8 +47,10 @@ class DeterminingEquations():
             expression in the new format
         """
 
-        new_labeling = deepcopy(self.model_info.dependent_variables_partial_derivatives)
-        previous_labeling = deepcopy(self.model_info.derivatives_subscript_notation)
+        new_labeling = deepcopy(
+            self.model_info.dependent_variables_partial_derivatives)
+        previous_labeling = deepcopy(
+            self.model_info.derivatives_subscript_notation)
 
         new_labeling.reverse()
         previous_labeling.reverse()
@@ -70,7 +75,8 @@ class DeterminingEquations():
         S = re.sub(r'Derivative\([(eta)(xi)\^][\w\(,\)\^]*\&*\d*', "", S)
         S = re.sub(r'[(eta)(xi)]+\^[\w\(,\)\^]+\**', "", S)
         S = re.sub(r'Derivative', "#", S)
-        dep_var_str = [str(ele).replace(' ', '') for ele in self.model_info.dependent_variables]
+        dep_var_str = [str(ele).replace(' ', '')
+                       for ele in self.model_info.dependent_variables]
         for var in dep_var_str:
             var = var.replace("(", "\(").replace(")", "\)")
             S = re.sub(f'(?<!\(|,){var}\&*\d*', "", S)
@@ -78,7 +84,8 @@ class DeterminingEquations():
                          self.model_info.independent_variables]
         for var in indep_var_str:
             S = re.sub(f'(?<!\(|,){var}\&*\d*', "", S)
-        constants_str = [str(ele).replace(' ', '') for ele in self.model_info.constants]
+        constants_str = [str(ele).replace(' ', '')
+                         for ele in self.model_info.constants]
         for cte in constants_str:
             S = re.sub(f'{cte}\&*\d*', "", S)
         S = re.sub(r'#', "Derivative", S)
@@ -125,9 +132,9 @@ class DeterminingEquations():
                         element = element.replace(factor, '')
 
                     value.append(element)
-                    value[-1] = re.sub(r'(?<=[\+\-])\*+','', value[-1])
-                    value[-1] = re.sub(r'(?<=\d|\))\*+','*', value[-1])
-                    value[-1] = re.sub(r'\*\*+','*', value[-1])
+                    value[-1] = re.sub(r'(?<=[\+\-])\*+', '', value[-1])
+                    value[-1] = re.sub(r'(?<=\d|\))\*+', '*', value[-1])
+                    value[-1] = re.sub(r'\*\*+', '*', value[-1])
 
                     if value[-1][-1] == "*":
                         value[-1] = value[-1][:-1]
@@ -157,9 +164,9 @@ class DeterminingEquations():
         """This function transforms the string version of the determinant equations to a coded
         dictionary format.
         """
-        list_all = (self.model_info.constants + self.model_info.independent_variables +
-                    self.model_info.dependent_variables)
-        list_var = self.model_info.independent_variables + self.model_info.dependent_variables
+        list_var = self.model_info.independent_variables + \
+            self.model_info.dependent_variables
+        list_all = self.model_info.constants + list_var
         det_eqn = []
         for eqn in self.determining_equations.values():
             aux_list = []
@@ -169,7 +176,37 @@ class DeterminingEquations():
                 term = {"coefficient": 1, "constants": None,
                         "derivatives": None, "variable": None}
                 aux_list.append(str_to_dict(sympy.sympify(str_term), term, arr_pow,
-                    arr_deriv, np.array(list_all), np.array(list_var)))
+                                            arr_deriv, np.array(list_all), np.array(list_var)))
             det_eqn.append(aux_list)
         keys = list(range(len(det_eqn)))
         self.determining_equations = dict(zip(keys, det_eqn))
+
+    def simplify_redundant_equations(self):
+        """Given a dict of equations reduces the set by eliminating redundant equations. It is just a
+        test to try the logic far from being ready yet
+        """
+        simplify = True
+        exit_param = 0
+        zero_terms = {} ## look into this dictionary as to avoid redoing
+        det_eqns = self.determining_equations
+        det_eqns_aux = deepcopy(self.determining_equations)
+        while simplify:
+            for idx, eqn in det_eqns.items():
+                for _, zero in zero_terms.items():
+                    for term in eqn:
+                        if is_zero(zero, term) and term in det_eqns_aux[idx]:
+                            det_eqns_aux[idx][det_eqns_aux[idx].index(
+                                term)] = 0
+                            exit_param = 0
+                    det_eqns_aux[idx] = list(
+                        filter(lambda num: num != 0, det_eqns_aux[idx]))
+                    exit_param += 1
+                if len(det_eqns_aux[idx]) == 1:
+                    zero_terms[idx] = det_eqns_aux[idx][0]
+                if exit_param > len(det_eqns):
+                    simplify = False
+            det_eqns = deepcopy(det_eqns_aux)
+        simplify_det_eqns = {k: v for k, v in det_eqns.items() if v}
+        for idx in zero_terms:
+            simplify_det_eqns[idx] = [zero_terms[idx]]
+        return simplify_det_eqns

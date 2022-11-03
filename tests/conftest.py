@@ -3,13 +3,13 @@ import json
 from pytest import fixture
 
 
-data_is_zero = "data_test/data_algebra/data_is_zero.json"
+data_is_zero = "tests/data_test/data_algebra/data_is_zero.json"
 
-data_drop_constants = "data_test/data_algebra/data_drop_constants.json"
+data_drop_constants = "tests/data_test/data_algebra/data_drop_constants.json"
 
-data_compare_derivatives = "data_test/data_algebra/data_compare_derivatives.json"
+data_compare_derivatives = "tests/data_test/data_algebra/data_compare_derivatives.json"
 
-data_key_ordering = "data_test/data_algebra/data_key_ordering.json"
+data_key_ordering = "tests/data_test/data_algebra/data_key_ordering.json"
 
 def load_test_data(path):
     with open(path) as data_file:
