@@ -1,4 +1,4 @@
-import copy
+"""This module contains functions regarding the algebra."""
 import re
 
 import numpy as np
@@ -29,58 +29,6 @@ def is_zero(zero_term:dict, term:dict):
         compare_derivatives(zero_term['derivatives'], term['derivatives'])
 
 
-def get_common_factors(XF, dependent_variables:list, independent_variables:list, constants:list):
-    """This function creates an empty dictionary where the keys
-    are all possible common factors of the determining equations.
-
-    Parameters
-    ----------
-    XF : symbolic expression
-        The Lie operator acting over a differential equation F.
-    dependent_variables : list
-        list with all dependant variables
-    independent_variables : list
-        list of all independent variables
-    constants : list
-        list with all constants
-
-    Returns
-    -------
-    dict
-        empty dictionary where the keys are the possible factorable
-        terms for the determining equations.
-    """
-    S = str(XF.expand())
-    S = S.replace(' ', '')
-    S = re.sub(r'\*{2}', "&", S)
-    S = re.sub(r'Subs\(Derivative\([(eta)(xi)\^][\w\(,\)\^]*\&*\d*', "", S)
-    S = re.sub(r'Derivative\([(eta)(xi)\^][\w\(,\)\^]*\&*\d*', "", S)
-    S = re.sub(r'[(eta)(xi)]+\^[\w\(,\)\^]+\**', "", S)
-    S = re.sub(r'Derivative', "#", S)
-    dep_var_str = [str(ele).replace(' ', '') for ele in dependent_variables]
-    for var in dep_var_str:
-        var = var.replace("(", "\(").replace(")", "\)")
-        S = re.sub(f'(?<!\(|,){var}\&*\d*', "", S)
-    indep_var_str = [str(ele).replace(' ', '') for ele in independent_variables]
-    for var in indep_var_str:
-        S = re.sub(f'(?<!\(|,){var}\&*\d*', "", S)
-    constants_str = [str(ele).replace(' ', '') for ele in constants]
-    for cte in constants_str:
-        S = re.sub(f'{cte}\&*\d*', "", S)
-    S = re.sub(r'#', "Derivative", S)
-    S = re.sub(r'\&', "^", S)
-    S = re.sub(r'\*(?=[\+\-])', "", S)
-    S = re.sub(r'(?<!\^)\d+\*', '', S)
-    S = re.sub(r'(?<=[\+\-])\*+', "", S)
-    S = re.sub(r'\*+', "*", S)
-    if S[0] == '*':
-        S = S[1:]
-    keys = re.split('\+|\-', S)
-    keys = list(dict.fromkeys(keys))
-    if '' in keys:
-        keys.remove('')
-    return dict.fromkeys(key_ordering(keys))
-
 
 def key_ordering(keys):
     """Giving a list of strings it organized in a way that the each element is not completely
@@ -109,90 +57,6 @@ def key_ordering(keys):
                 keys_order.append(key_1)
     return keys_order
 
-
-def get_determinant_equations(XF, dict_det_eqn):
-    """This function gives the determinant equations
-    in a string format
-
-    Parameters
-    ----------
-    XF : sp.add
-        symbolic representation of the Lie operator acting over the differential equation. At this
-        step XF already used the rules array.
-    dict_det_eqn : dict
-        dictionary with all the derivatives terms in XF
-
-    Returns
-    -------
-    dict
-        dictionary with the string version of the determinant equations. Each key has the
-        information of the term that was grouped by and equated to zero.
-    """
-    S = str(XF.expand())
-    S = S.replace(' ', '')
-    XF_string = re.sub(r'\^', "", S)
-    XF_string = re.sub(r'\*{2}', "^", XF_string)
-    XF_string = re.sub('\+', ' +', XF_string)
-    XF_string = re.sub('\-', ' -', XF_string)
-    XF_terms = re.split(' ', XF_string)
-    if XF_terms[0] == '':
-        XF_terms.pop(0)
-    return group_terms(dict_det_eqn, XF_terms)
-
-
-def group_terms(dict_det_eqn, XF_terms):
-    """This function implements the logic to find terms specified
-    in dict_det_eqn and group them in that dictionary.
-
-    Parameters
-    ----------
-    dict_det_eqn : dict
-        dictionary where each key has the terms to group by. Each key is a string.
-    XF_terms : list
-        list of strings where each element is an element of the expanded version an equation.
-
-    Returns
-    -------
-    dict
-        dictionary where in each value contains the factorized terms according to the given keys.
-    """
-    for key in dict_det_eqn.keys():
-        dict_det_eqn[key] = []
-
-    lonely_terms = []
-    for element in XF_terms:
-        add = False
-        for key, value in dict_det_eqn.items():
-            factors = key.split('*')
-            if len(factors) == 1:
-                if key in element:
-                    value.append(element.replace(key, ''))
-                    value[-1] = re.sub(r'(?<=[\+\-])\*+','', value[-1])
-                    value[-1] = re.sub(r'(?<=\d|\))\*+','*', value[-1])
-                    value[-1] = re.sub(r'\*\*+','*', value[-1])
-                    if value[-1][-1] == "*":
-                        value[-1] = value[-1][:-1]
-                    add = True
-                    break
-            else:
-                inside = True
-                if any(True for f in factors if f not in element):
-                    inside = False
-                if inside:
-                    for f in factors:
-                        element = element.replace(f, '')
-                    value.append(element)
-                    value[-1] = re.sub(r'(?<=[\+\-])\*+','', value[-1])
-                    value[-1] = re.sub(r'(?<=\d)\*+','*', value[-1])
-                    value[-1] = re.sub(r'\*\*+','*', value[-1])
-                    if value[-1][-1] == "*":
-                        value[-1] = value[-1][:-1]
-                    add = True
-                    break
-        if not add:
-            lonely_terms.append(element)
-    dict_det_eqn['lonely_terms'] = lonely_terms
-    return dict_det_eqn
 
 
 def str_eqn_to_dict_eqn(dict_det_eqn, list_var, list_all):
