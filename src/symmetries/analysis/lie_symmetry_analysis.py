@@ -1,4 +1,5 @@
-from symmetries.utils.symbolic import sym_det_eqn
+"""This function contains the script to run teh infinitesimals generation, group operator and
+simplifying the equations."""
 from symmetries.utils.latex import latex_det_eqn
 from symmetries.objects.system import System
 from symmetries.objects.determining_equations import DeterminingEquations
