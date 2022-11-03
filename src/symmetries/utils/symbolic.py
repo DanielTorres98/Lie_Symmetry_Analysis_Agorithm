@@ -133,9 +133,7 @@ def get_symbolic_terms(eqn, var_dict, list_cte, var_list):
     sym_cte_list = list_cte + var_list
     a = 0
     for term in eqn:
-        one_term = False
-        if len(eqn) == 1:
-            one_term = True
+        one_term = len(eqn) == 1
         a += dict_to_symb(term, var_dict, var_list,
                              sym_cte_list, one_term)
     return a
