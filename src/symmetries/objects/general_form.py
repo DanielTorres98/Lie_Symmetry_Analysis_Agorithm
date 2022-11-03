@@ -13,7 +13,7 @@ class GeneralForm():
         self.general_form = self.obtain_general_form()
         self.determining_equations = deepcopy(system.determining_equations)
         self.deleted = {}
-        self.parsed_variables = self.parse_variables()
+        self.parsed_variables = self._parse_variables()
 
     def obtain_general_form(self):
         """Proposes a general form of solutions for all infinitesimals as a function of
@@ -92,6 +92,18 @@ class GeneralForm():
                                   'in', item['variable'], 'eq', k)
                             del self.determining_equations[k]
 
+    def simplify_iteratively(self):
+        """Iterative method, perform the three steps until determining equations does not change.
+        """
+        while True:
+            check_against = deepcopy(self.determining_equations)
+            self.find_first_derivative_equals_0()
+            self.find_deleted_items_in_equations()
+            self.delete_second_derivatives()
+
+            if check_against == self.determining_equations:
+                break
+
     def print_general_form(self):
         """Prints general form as symbolic using sympy Matrix."""
         print('already deleted:', self.deleted)
@@ -130,7 +142,7 @@ class GeneralForm():
 
         return matrix
 
-    def parse_variables(self):
+    def _parse_variables(self):
         """Creates dictionary with translation to symbolic terms of variables.
 
         Returns
