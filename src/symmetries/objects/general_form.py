@@ -1,8 +1,8 @@
 
 from copy import deepcopy
 import regex as re
-from system import System
-from determining_equations import DeterminingEquations
+from .system import System
+from .determining_equations import DeterminingEquations
 from symmetries.utils.symbolic import sym_det_eqn
 
 
