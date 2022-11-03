@@ -41,6 +41,7 @@ class GeneralForm():
                             print('deleting', l['variable'], var)
                         else:
                             self.deleted[l['variable']].append(var)
+                            print('deleting', l['variable'], var)
 
 
     def find_deleted_items_in_equations(self):
@@ -52,7 +53,7 @@ class GeneralForm():
                         vars = [self.model.all_variables[n]
                                 for n, d in enumerate(item['derivatives']) if d]
                         for var in vars:
-                            if var in self.deleted[item['variable']]:
+                            if var in self.deleted[item['variable']] and item in v:
                                 print('found', var, 'in', item['variable'], 'eq', k)
                                 v.remove(item)
 
