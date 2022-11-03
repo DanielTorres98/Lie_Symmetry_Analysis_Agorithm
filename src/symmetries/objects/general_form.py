@@ -42,19 +42,20 @@ class GeneralForm():
         dependencies called deleted."""
         for v in self.determining_equations.values():
             if len(v) == 1:
-                l = v[0]
-                if sum(l['derivatives']) == 1:
-                    var = [self.model.all_variables[n]
-                           for n, d in enumerate(l['derivatives']) if d][0]
-                    if not (l['variable'] in self.deleted and var in self.deleted[l['variable']]):
-                        self.general_form[l['variable'][:-1]
-                                          ][l['variable'][-1]].remove(var)
-                        if l['variable'] not in self.deleted:
-                            self.deleted[l['variable']] = [var]
-                            print('deleting', l['variable'], var)
+                item = v[0]
+                if sum(item['derivatives']) == 1:
+                    var = [v for v, order in zip(
+                        self.model.all_variables, item['derivatives']) if order][0]
+                    if not ((item['variable'] in self.deleted) and (
+                        var in self.deleted[item['variable']])):
+                        self.general_form[item['variable'][:-1]
+                                          ][item['variable'][-1]].remove(var)
+                        if item['variable'] not in self.deleted:
+                            self.deleted[item['variable']] = [var]
+                            print('deleting', item['variable'], var)
                         else:
-                            self.deleted[l['variable']].append(var)
-                            print('deleting', l['variable'], var)
+                            self.deleted[item['variable']].append(var)
+                            print('deleting', item['variable'], var)
 
     def find_deleted_items_in_equations(self):
         """Searches in the determining equations for equations that contain a term that is an
@@ -65,8 +66,10 @@ class GeneralForm():
                 values = deepcopy(eq)
                 for item in values:
                     if item['variable'] in self.deleted:
-                        for variable, order in zip(self.model.all_variables, item['derivatives']):
-                            if (variable in self.deleted[item['variable']]) and order and (item in eq):
+                        variables = [v for v, order in zip(
+                            self.model.all_variables, item['derivatives']) if order]
+                        for variable in variables:
+                            if (variable in self.deleted[item['variable']]) and (item in eq):
                                 print('found', variable, 'in',
                                       item['variable'], 'eq', k)
                                 eq.remove(item)
@@ -81,13 +84,16 @@ class GeneralForm():
             if len(eq) == 1:
                 item = eq[0]  # there is only a single term in the equation
                 if item['variable'] in self.deleted:
-                    for variable, order in zip(self.model.all_variables, item['derivatives']):
-                        if variable in self.deleted[item['variable']] and order > 1:
+                    variables = [v for v, order in zip(
+                        self.model.all_variables, item['derivatives']) if order > 1]
+                    for variable in variables:
+                        if variable in self.deleted[item['variable']]:
                             print('found derivative of', variable,
                                   'in', item['variable'], 'eq', k)
                             del self.determining_equations[k]
 
     def print_general_form(self):
+        """Prints general form as symbolic using sympy Matrix."""
         print('already deleted:', self.deleted)
         print('general form:')
         return self._print_symbolic_equations(
@@ -130,7 +136,7 @@ class GeneralForm():
         Returns
         -------
         dictionary
-            xit = xi^(t)
+            Creates key value pairs passing for example xit to xi^(t).
         """
         var_dict = {}
 
