@@ -13,6 +13,7 @@ class GeneralForm():
         self.general_form = self.obtain_general_form()
         self.determining_equations = deepcopy(system.determining_equations)
         self.deleted = {}
+        self.parsed_variables = self.parse_variables()
 
     def obtain_general_form(self):
         """Proposes a general form of solutions for all infinitesimals as a function of
@@ -65,8 +66,7 @@ class GeneralForm():
                 for item in values:
                     if item['variable'] in self.deleted:
                         for variable, order in zip(self.model.all_variables, item['derivatives']):
-                            if (variable in self.deleted[item['variable']]
-                            ) and order and (item in eq):
+                            if (variable in self.deleted[item['variable']]) and order and (item in eq):
                                 print('found', variable, 'in',
                                       item['variable'], 'eq', k)
                                 eq.remove(item)
@@ -87,12 +87,18 @@ class GeneralForm():
                                   'in', item['variable'], 'eq', k)
                             del self.determining_equations[k]
 
-    def print_matrix(self):
-        print('general form:', self.general_form)  # pretty print this as sympy
+    def print_general_form(self):
         print('already deleted:', self.deleted)
-        return self.print_symbolic_equations()
+        print('general form:')
+        return self._print_symbolic_equations(
+            self.general_form, 'general')
 
-    def print_symbolic_equations(self):
+    def print_determining_equations(self):
+        """Prints determining equations as symbolic using sympy Matrix."""
+        return self._print_symbolic_equations(
+            self.determining_equations, 'determining')
+
+    def _print_symbolic_equations(self, equations, type):
         """Gives the symbolic version of remaining determining equation.
 
         Parameters
@@ -100,14 +106,22 @@ class GeneralForm():
         det_eqn : dict
             dictionary will all the determining equations.
         """
-        var_dict = self.parse_variables()
         matrix = sympy.Matrix([[]])
-        for i, eqn in enumerate(self.determining_equations.values()):
-            matrix = matrix.row_insert(i,
-                            sympy.Matrix([[i, sympy.Eq(get_symbolic_terms(
-                                eqn, var_dict, self.model.constants, self.model.all_variables
-                            ), 0)]])
-                            )
+        i = 0
+        for variable, eqns in equations.items():
+            row = None
+            if type == 'determining':
+                i += 1
+                row = sympy.Matrix([[i, sympy.Eq(get_symbolic_terms(
+                    eqns, self.parsed_variables, self.model.constants, self.model.all_variables), 0)]])
+                matrix = matrix.row_insert(i, row)
+
+            elif type == 'general':
+                for var, dependencies in eqns.items():
+                    row = sympy.Matrix(
+                        [f"{variable}({','.join([str(dep) for dep in dependencies])})^{var} "])
+                    matrix = matrix.row_insert(i, row)
+
         return matrix
 
     def parse_variables(self):
