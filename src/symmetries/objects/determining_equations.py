@@ -187,7 +187,7 @@ class DeterminingEquations():
         """
         simplify = True
         exit_param = 0
-        zero_terms = {}
+        zero_terms = {} ## look into this dictionary as to avoid redoing
         det_eqns = self.determining_equations
         det_eqns_aux = deepcopy(self.determining_equations)
         while simplify:

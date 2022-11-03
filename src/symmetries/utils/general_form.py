@@ -49,11 +49,12 @@ class GeneralForm():
                 values = deepcopy(v)
                 for item in values:
                     if item['variable'] in self.deleted:
-                        var = [self.model.all_variables[n]
-                                for n, d in enumerate(item['derivatives']) if d][0]
-                        if var in self.deleted[item['variable']]:
-                            print('found', var, 'in', item['variable'], 'eq', k)
-                            v.remove(item)
+                        vars = [self.model.all_variables[n]
+                                for n, d in enumerate(item['derivatives']) if d]
+                        for var in vars:
+                            if var in self.deleted[item['variable']]:
+                                print('found', var, 'in', item['variable'], 'eq', k)
+                                v.remove(item)
 
     def delete_second_derivatives(self):
         det_eqns = deepcopy(self.determining_equations)
@@ -69,7 +70,7 @@ class GeneralForm():
                                     del self.determining_equations[k]
                             
     def print_matrix(self):
-        print('general form:', self.general_form)
+        print('general form:', self.general_form) # pretty print this as sympy
         print('already deleted:', self.deleted)
         return sym_det_eqn(
             self.determining_equations,
