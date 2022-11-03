@@ -1,8 +1,8 @@
 
 from copy import deepcopy
 import regex as re
-from symmetries.objects.system import System
-from symmetries.objects.determining_equations import DeterminingEquations
+from .system import System
+from .determining_equations import DeterminingEquations
 from symmetries.utils.symbolic import sym_det_eqn
 
 
@@ -41,6 +41,7 @@ class GeneralForm():
                             print('deleting', l['variable'], var)
                         else:
                             self.deleted[l['variable']].append(var)
+                            print('deleting', l['variable'], var)
 
 
     def find_deleted_items_in_equations(self):
@@ -52,7 +53,7 @@ class GeneralForm():
                         vars = [self.model.all_variables[n]
                                 for n, d in enumerate(item['derivatives']) if d]
                         for var in vars:
-                            if var in self.deleted[item['variable']]:
+                            if var in self.deleted[item['variable']] and item in v:
                                 print('found', var, 'in', item['variable'], 'eq', k)
                                 v.remove(item)
 
