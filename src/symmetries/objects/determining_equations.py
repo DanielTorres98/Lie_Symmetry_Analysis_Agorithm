@@ -245,7 +245,7 @@ class DeterminingEquations(SystemOfEquations):
         simplify_det_eqns = {k: v for k, v in det_eqns.items() if v}
         for idx in zero_terms:
             simplify_det_eqns[idx] = [zero_terms[idx]]
-        return simplify_det_eqns
+        self.determining_equations = simplify_det_eqns
 
     def find_first_derivative_equals_0(self):
         """Finds equations in the determining equations that contain a single term that is a first
