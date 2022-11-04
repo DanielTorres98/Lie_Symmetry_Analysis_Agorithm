@@ -4,24 +4,33 @@ from copy import deepcopy
 import sympy
 import numpy as np
 from symmetries.utils.algebra import key_ordering, str_to_dict, is_zero
+from .system_of_equations import SystemOfEquations
+from .system import System
 
 
-class DeterminingEquations():
+class DeterminingEquations(SystemOfEquations):
     """Class"""
 
-    def __init__(self, system, rules_array):
+    def __init__(self,
+                 rules_array: dict,
+                 system: System,
+                 independent_variables: list,
+                 dependent_variables: list,
+                 constants: list,
+                 ):
+
         self.model_info = system
         self.rules_array = rules_array
 
         self.determining_equations_extended = ""
         self.determining_equations = {}
 
+        super().__init__(independent_variables, dependent_variables, constants)
+
     def get_group_operator(self):
         """Given a differential equation F, gives the Lie operator acting over F.
         """
-        variables = self.model_info.independent_variables \
-            + self.model_info.dependent_variables \
-            + self.model_info.derivatives_subscript_notation
+        variables = self.all_variables + self.model_info.derivatives_subscript_notation
         l_f = 0
         for var, inft in zip(variables, self.model_info.infinitesimals):
             l_f += inft * \
@@ -76,16 +85,16 @@ class DeterminingEquations():
         S = re.sub(r'[(eta)(xi)]+\^[\w\(,\)\^]+\**', "", S)
         S = re.sub(r'Derivative', "#", S)
         dep_var_str = [str(ele).replace(' ', '')
-                       for ele in self.model_info.dependent_variables]
+                       for ele in self.dependent_variables]
         for var in dep_var_str:
             var = var.replace("(", "\(").replace(")", "\)")
             S = re.sub(f'(?<!\(|,){var}\&*\d*', "", S)
         indep_var_str = [str(ele).replace(' ', '') for ele in
-                         self.model_info.independent_variables]
+                         self.independent_variables]
         for var in indep_var_str:
             S = re.sub(f'(?<!\(|,){var}\&*\d*', "", S)
         constants_str = [str(ele).replace(' ', '')
-                         for ele in self.model_info.constants]
+                         for ele in self.constants]
         for cte in constants_str:
             S = re.sub(f'{cte}\&*\d*', "", S)
         S = re.sub(r'#', "Derivative", S)
@@ -164,9 +173,8 @@ class DeterminingEquations():
         """This function transforms the string version of the determinant equations to a coded
         dictionary format.
         """
-        list_var = self.model_info.independent_variables + \
-            self.model_info.dependent_variables
-        list_all = self.model_info.constants + list_var
+        list_var = self.all_variables
+        list_all = self.constants + list_var
         det_eqn = []
         for eqn in self.determining_equations.values():
             aux_list = []
@@ -187,7 +195,7 @@ class DeterminingEquations():
         """
         simplify = True
         exit_param = 0
-        zero_terms = {} ## look into this dictionary as to avoid redoing
+        zero_terms = {}  # look into this dictionary as to avoid redoing
         det_eqns = self.determining_equations
         det_eqns_aux = deepcopy(self.determining_equations)
         while simplify:

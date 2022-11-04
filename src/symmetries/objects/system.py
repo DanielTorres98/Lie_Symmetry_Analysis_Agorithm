@@ -6,44 +6,39 @@ variables, etc.
 from copy import deepcopy
 import sympy
 from symmetries.utils.combinatorics import list_combinatorics
+from .system_of_equations import SystemOfEquations
 
 
-class System():
+class System(SystemOfEquations):
     """System of equations base class."""
 
     def __init__(self,
                  differential_equation,
+                 order: int,
                  independent_variables: list,
                  dependent_variables: list,
                  constants: list,
-                 order: int
                  ):
         """Initialization class for system
 
         Args:
             differential_equation (sympy.add): Differential equation to be analyzed.
-            rules_array (dict): Differential equation solved for the higher order derivative.
+            order (int): Order of the differential equation.
             independent_variables (list): Independent variables.
             dependent_variables (list): Dependent variables.
             constants (list): Constants of motion of the system.
-            order (int): Order of the differential equation.
         """
         self.differential_equation = differential_equation
-        # self.rules_array = rules_array
-        self.independent_variables = independent_variables
-        self.dependent_variables = dependent_variables
-        self.all_variables = independent_variables + dependent_variables
-        self.constants = constants
         self.order = order
 
-        # self.n_independent = len(independent_variables)
-        # self.n_dependent = len(dependent_variables)
         self.infinitesimals: list = []
         self.infinitesimals_dep: list = []
         self.infinitesimals_ind: list = []
 
         self.dependent_variables_partial_derivatives: list = []
         self.derivatives_subscript_notation: list = []
+
+        super().__init__(independent_variables, dependent_variables, constants)
 
     def infinitesimals_generator(self) -> None:
         """Creates the infinitesimals of the independent and dependents variables. Not the

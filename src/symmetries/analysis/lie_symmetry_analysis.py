@@ -15,12 +15,14 @@ def point_symmetries(
     latex: bool = False
 ):
 
+    variables = {'independent_variables': independent_variables,
+                 'dependent_variables': dependent_variables,
+                 'constants': constants}
+
     model = System(
         differential_equation=differential_equation,
-        independent_variables=independent_variables,
-        dependent_variables=dependent_variables,
-        constants=constants,
         order=order,
+        **variables
     )
     # This section of the code generates the infitesimals for all the independent variables and
     # dependent variables.
@@ -37,6 +39,7 @@ def point_symmetries(
     system_of_equations = DeterminingEquations(
         system=model,
         rules_array=f_rules_array,
+        **variables
     )
     # Applying the group operator over the function F.
     #
