@@ -247,7 +247,6 @@ class DeterminingEquations(SystemOfEquations):
             simplify_det_eqns[idx] = [zero_terms[idx]]
         return simplify_det_eqns
 
-
     def find_first_derivative_equals_0(self):
         """Finds equations in the determining equations that contain a single term that is a first
         derivative of a given variable and stores it in a dictionary that contains deleted
@@ -280,39 +279,51 @@ class DeterminingEquations(SystemOfEquations):
                     if item['variable'] in self.deleted:
                         variables = [v for v, order in zip(
                             self.all_variables, item['derivatives']) if order]
-                        for variable in variables:
-                            if (variable in self.deleted[item['variable']]) and (item in eq):
-                                print('found', variable, 'in',
-                                      item['variable'], 'eq', k)
-                                eq.remove(item)
+                        if any(var in self.deleted[item['variable']] for var in variables):
+                            print('found deleted variable in',
+                                  item['variable'], 'eq', k)
+                            eq.remove(item)
 
-    def delete_second_derivatives(self):
+    def delete_derivatives(self):
         """Similarly to find_deleted_items_in_equations, the method iterates over the system of
         equations, finds equations containing single higher order derivatives and deletes them
         from the system.
         Note: this is a separate method because it modifies the iterator."""
         det_eqns = deepcopy(self.determining_equations)
         for k, eq in det_eqns.items():
-            if len(eq) == 1:
+            if len(eq) == 1 and eq[0]['variable'] in self.deleted:
                 item = eq[0]  # there is only a single term in the equation
-                if item['variable'] in self.deleted:
-                    variables = [v for v, order in zip(
-                        self.all_variables, item['derivatives']) if order > 1]
-                    for variable in variables:
-                        if variable in self.deleted[item['variable']]:
-                            print('found derivative of', variable,
-                                  'in', item['variable'], 'eq', k)
-                            del self.determining_equations[k]
+                deleted = False
+
+                # search for higher order derivative of a deleted variable
+                variables = [v for v, order in zip(
+                    self.all_variables, item['derivatives']) if order > 1]
+                if any(var in self.deleted[item['variable']] for var in variables):
+                    print('found high order derivative of deleted variable in',
+                            item['variable'], 'eq', k)
+                    del self.determining_equations[k]
+                    deleted = True
+
+                # search for cross derivative of a deleted variable
+                variables = [v for v, order in zip(
+                    self.all_variables, item['derivatives']) if order]
+                if len(variables) > 1 and not deleted:
+                    if any(var in self.deleted[item['variable']] for var in variables):
+                        print('found cross derivative of variable in',
+                                item['variable'], 'eq', k)
+                        del self.determining_equations[k]
+            if len(eq)==0:
+                del self.determining_equations[k]
 
     def simplify_iteratively(self):
         """Iterative method, perform the three steps until determining equations does not change.
         """
         while True:
             check_against = deepcopy(self.determining_equations)
-            # self.simplify_redundant_equations()
+            self.simplify_redundant_equations()
             self.find_first_derivative_equals_0()
             self.find_deleted_items_in_equations()
-            self.delete_second_derivatives()
+            self.delete_derivatives()
 
             if check_against == self.determining_equations:
                 break
