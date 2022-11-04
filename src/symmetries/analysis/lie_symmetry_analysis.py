@@ -51,7 +51,8 @@ def point_symmetries(
     system_of_equations.get_common_factors()
     system_of_equations.get_determining_equations()
     system_of_equations.encode_determining_equations()
-    system_of_equations.simplify_redundant_equations()
+
+    system_of_equations.simplify_iteratively()
 
     det_eqn = system_of_equations.determining_equations
     # If latex=True prints the latex code for the determining equations.
@@ -74,4 +75,4 @@ def point_symmetries(
         latex_code = latex_code.replace("+-", "-")
         return print(latex_code)
 
-    return model, system_of_equations
+    return system_of_equations
