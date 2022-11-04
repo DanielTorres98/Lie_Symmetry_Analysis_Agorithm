@@ -195,6 +195,27 @@ class DeterminingEquations(SystemOfEquations):
         keys = list(range(len(det_eqn)))
         self.determining_equations = dict(zip(keys, det_eqn))
 
+    def obtain_general_form(self):
+        """Proposes a general form of solutions for all infinitesimals as a function of
+        all the independent and dependent variables accordingly.
+
+        Returns
+        -------
+        dictionary
+            Keys are the infinitesimals eta and eta and values are list of relevant variables.
+        """
+        general_form = {}
+        infinitesimals = self.model.infinitesimals_ind + self.model.infinitesimals_dep
+
+        for inft in infinitesimals:
+            l = re.split(r'\W+', str(inft), len(self.all_variables)+1)
+            if l[0] not in general_form:
+                general_form[l[0]] = {l[1]: deepcopy(self.all_variables)}
+            else:
+                general_form[l[0]][l[1]] = deepcopy(self.all_variables)
+
+        return general_form
+
     def simplify_redundant_equations(self):
         """Given a dict of equations reduces the set by eliminating redundant equations. It is just a
         test to try the logic far from being ready yet
@@ -220,31 +241,12 @@ class DeterminingEquations(SystemOfEquations):
                 if exit_param > len(det_eqns):
                     simplify = False
             det_eqns = deepcopy(det_eqns_aux)
+
         simplify_det_eqns = {k: v for k, v in det_eqns.items() if v}
         for idx in zero_terms:
             simplify_det_eqns[idx] = [zero_terms[idx]]
         return simplify_det_eqns
 
-    def obtain_general_form(self):
-        """Proposes a general form of solutions for all infinitesimals as a function of
-        all the independent and dependent variables accordingly.
-
-        Returns
-        -------
-        dictionary
-            Keys are the infinitesimals eta and eta and values are list of relevant variables.
-        """
-        general_form = {}
-        infinitesimals = self.model.infinitesimals_ind + self.model.infinitesimals_dep
-
-        for inft in infinitesimals:
-            l = re.split(r'\W+', str(inft), len(self.all_variables)+1)
-            if l[0] not in general_form:
-                general_form[l[0]] = {l[1]: deepcopy(self.all_variables)}
-            else:
-                general_form[l[0]][l[1]] = deepcopy(self.all_variables)
-
-        return general_form
 
     def find_first_derivative_equals_0(self):
         """Finds equations in the determining equations that contain a single term that is a first
@@ -307,7 +309,7 @@ class DeterminingEquations(SystemOfEquations):
         """
         while True:
             check_against = deepcopy(self.determining_equations)
-            self.simplify_redundant_equations()
+            # self.simplify_redundant_equations()
             self.find_first_derivative_equals_0()
             self.find_deleted_items_in_equations()
             self.delete_second_derivatives()
