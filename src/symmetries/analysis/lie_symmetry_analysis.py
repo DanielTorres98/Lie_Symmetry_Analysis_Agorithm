@@ -1,3 +1,5 @@
+import warnings
+
 from symmetries.utils.symbolic import sym_det_eqn
 from symmetries.utils.latex import latex_det_eqn
 from symmetries.objects.system import System
@@ -13,6 +15,9 @@ def point_symmetries(
     constants: list,
     latex: bool = False
 ):
+    # Ignore deprecated warnings. This was implemented to ignore sympy's warning when using a
+    # a matrix to show the determining equations.
+    warnings.filterwarnings("ignore", category=DeprecationWarning)
 
     model = System(
         differential_equation=differential_equation,

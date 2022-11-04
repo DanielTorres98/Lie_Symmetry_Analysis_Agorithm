@@ -60,7 +60,9 @@ class DeterminingEquations():
                 self.determining_equations_extended.xreplace({old: new})
 
     def simplify_rules_array(self):
-        """TODO"""
+        """Substitute the higher order derivative inside the differential equation for further
+        simplification.
+        """
         self.determining_equations_extended = sympy.nsimplify(
             self.determining_equations_extended.subs(self.rules_array))
 
