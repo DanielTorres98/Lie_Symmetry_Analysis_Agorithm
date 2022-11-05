@@ -162,5 +162,4 @@ class System():
         previous_labeling.reverse()
 
         for new, old in zip(new_labeling, previous_labeling):
-            self.differential_equation = self.differential_equation.xreplace({
-                                                                             old: new})
+            self.differential_equation = self.differential_equation.xreplace({old: new})
