@@ -1,3 +1,5 @@
+"""This function contains the script to run teh infinitesimals generation, group operator and
+simplifying the equations."""
 import warnings
 
 from symmetries.utils.symbolic import sym_det_eqn
