@@ -4,28 +4,43 @@ from copy import deepcopy
 import sympy
 import numpy as np
 from symmetries.utils.algebra import key_ordering, str_to_dict, is_zero
+from symmetries.utils.symbolic import get_symbolic_terms, parse_variables
+from .system_of_equations import SystemOfEquations
+from .system import System
 
 
-class DeterminingEquations():
+class DeterminingEquations(SystemOfEquations):
     """Class"""
 
-    def __init__(self, system, rules_array):
-        self.model_info = system
+    def __init__(self,
+                 rules_array: dict,
+                 system: System,
+                 independent_variables: list,
+                 dependent_variables: list,
+                 constants: list,
+                 ):
+
+        self.model = system
         self.rules_array = rules_array
 
         self.determining_equations_extended = ""
         self.determining_equations = {}
 
+        super().__init__(independent_variables, dependent_variables, constants)
+
+        self.general_form = self.obtain_general_form()
+        self.parsed_variables = parse_variables(
+            independent_variables, dependent_variables)
+        self.deleted = {}
+
     def get_group_operator(self):
         """Given a differential equation F, gives the Lie operator acting over F.
         """
-        variables = self.model_info.independent_variables \
-            + self.model_info.dependent_variables \
-            + self.model_info.derivatives_subscript_notation
+        variables = self.all_variables + self.model.derivatives_subscript_notation
         l_f = 0
-        for var, inft in zip(variables, self.model_info.infinitesimals):
+        for var, inft in zip(variables, self.model.infinitesimals):
             l_f += inft * \
-                sympy.Derivative(self.model_info.differential_equation, var)
+                sympy.Derivative(self.model.differential_equation, var)
         self.determining_equations_extended = sympy.simplify(l_f)
 
     def variable_relabeling(self):
@@ -48,9 +63,9 @@ class DeterminingEquations():
         """
 
         new_labeling = deepcopy(
-            self.model_info.dependent_variables_partial_derivatives)
+            self.model.dependent_variables_partial_derivatives)
         previous_labeling = deepcopy(
-            self.model_info.derivatives_subscript_notation)
+            self.model.derivatives_subscript_notation)
 
         new_labeling.reverse()
         previous_labeling.reverse()
@@ -78,16 +93,16 @@ class DeterminingEquations():
         S = re.sub(r'[(eta)(xi)]+\^[\w\(,\)\^]+\**', "", S)
         S = re.sub(r'Derivative', "#", S)
         dep_var_str = [str(ele).replace(' ', '')
-                       for ele in self.model_info.dependent_variables]
+                       for ele in self.dependent_variables]
         for var in dep_var_str:
             var = var.replace("(", "\(").replace(")", "\)")
             S = re.sub(f'(?<!\(|,){var}\&*\d*', "", S)
         indep_var_str = [str(ele).replace(' ', '') for ele in
-                         self.model_info.independent_variables]
+                         self.independent_variables]
         for var in indep_var_str:
             S = re.sub(f'(?<!\(|,){var}\&*\d*', "", S)
         constants_str = [str(ele).replace(' ', '')
-                         for ele in self.model_info.constants]
+                         for ele in self.constants]
         for cte in constants_str:
             S = re.sub(f'{cte}\&*\d*', "", S)
         S = re.sub(r'#', "Derivative", S)
@@ -166,9 +181,8 @@ class DeterminingEquations():
         """This function transforms the string version of the determinant equations to a coded
         dictionary format.
         """
-        list_var = self.model_info.independent_variables + \
-            self.model_info.dependent_variables
-        list_all = self.model_info.constants + list_var
+        list_var = self.all_variables
+        list_all = self.constants + list_var
         det_eqn = []
         for eqn in self.determining_equations.values():
             aux_list = []
@@ -183,13 +197,34 @@ class DeterminingEquations():
         keys = list(range(len(det_eqn)))
         self.determining_equations = dict(zip(keys, det_eqn))
 
+    def obtain_general_form(self):
+        """Proposes a general form of solutions for all infinitesimals as a function of
+        all the independent and dependent variables accordingly.
+
+        Returns
+        -------
+        dictionary
+            Keys are the infinitesimals eta and eta and values are list of relevant variables.
+        """
+        general_form = {}
+        infinitesimals = self.model.infinitesimals_ind + self.model.infinitesimals_dep
+
+        for inft in infinitesimals:
+            l = re.split(r'\W+', str(inft), len(self.all_variables)+1)
+            if l[0] not in general_form:
+                general_form[l[0]] = {l[1]: deepcopy(self.all_variables)}
+            else:
+                general_form[l[0]][l[1]] = deepcopy(self.all_variables)
+
+        return general_form
+
     def simplify_redundant_equations(self):
         """Given a dict of equations reduces the set by eliminating redundant equations. It is just a
         test to try the logic far from being ready yet
         """
         simplify = True
         exit_param = 0
-        zero_terms = {} ## look into this dictionary as to avoid redoing
+        zero_terms = {}  # look into this dictionary as to avoid redoing
         det_eqns = self.determining_equations
         det_eqns_aux = deepcopy(self.determining_equations)
         while simplify:
@@ -208,7 +243,127 @@ class DeterminingEquations():
                 if exit_param > len(det_eqns):
                     simplify = False
             det_eqns = deepcopy(det_eqns_aux)
+
         simplify_det_eqns = {k: v for k, v in det_eqns.items() if v}
         for idx in zero_terms:
             simplify_det_eqns[idx] = [zero_terms[idx]]
-        return simplify_det_eqns
+        self.determining_equations = simplify_det_eqns
+
+    def find_first_derivative_equals_0(self):
+        """Finds equations in the determining equations that contain a single term that is a first
+        derivative of a given variable and stores it in a dictionary that contains deleted
+        dependencies called deleted."""
+        for v in self.determining_equations.values():
+            if len(v) == 1:
+                item = v[0]
+                if sum(item['derivatives']) == 1:
+                    var = [v for v, order in zip(
+                        self.all_variables, item['derivatives']) if order][0]
+                    if not ((item['variable'] in self.deleted) and (
+                            var in self.deleted[item['variable']])):
+                        self.general_form[item['variable'][:-1]
+                                          ][item['variable'][-1]].remove(var)
+                        if item['variable'] not in self.deleted:
+                            self.deleted[item['variable']] = [var]
+                            print('deleting', item['variable'], var)
+                        else:
+                            self.deleted[item['variable']].append(var)
+                            print('deleting', item['variable'], var)
+
+    def find_deleted_items_in_equations(self):
+        """Searches in the determining equations for equations that contain a term that is an
+        already identified first derivative equals 0 or higher order or cross derivative of the
+        same."""
+        for k, eq in self.determining_equations.items():
+            if len(eq) > 1:
+                values = deepcopy(eq)
+                for item in values:
+                    if item['variable'] in self.deleted:
+                        variables = [v for v, order in zip(
+                            self.all_variables, item['derivatives']) if order]
+                        if any(var in self.deleted[item['variable']] for var in variables):
+                            print('found deleted variable in',
+                                  item['variable'], 'eq', k)
+                            eq.remove(item)
+
+    def delete_derivatives(self):
+        """Similarly to find_deleted_items_in_equations, the method iterates over the system of
+        equations, finds equations containing single higher order derivatives and deletes them
+        from the system.
+        Note: this is a separate method because it modifies the iterator."""
+        det_eqns = deepcopy(self.determining_equations)
+        for k, eq in det_eqns.items():
+            if len(eq) == 1 and eq[0]['variable'] in self.deleted:
+                item = eq[0]  # there is only a single term in the equation
+                deleted = False
+
+                # search for higher order derivative of a deleted variable
+                variables = [v for v, order in zip(
+                    self.all_variables, item['derivatives']) if order > 1]
+                if any(var in self.deleted[item['variable']] for var in variables):
+                    print('found high order derivative of deleted variable in',
+                            item['variable'], 'eq', k)
+                    del self.determining_equations[k]
+                    deleted = True
+
+                # search for cross derivative of a deleted variable
+                variables = [v for v, order in zip(
+                    self.all_variables, item['derivatives']) if order]
+                if len(variables) > 1 and not deleted:
+                    if any(var in self.deleted[item['variable']] for var in variables):
+                        print('found cross derivative of variable in',
+                                item['variable'], 'eq', k)
+                        del self.determining_equations[k]
+            if len(eq)==0:
+                del self.determining_equations[k]
+
+    def simplify_iteratively(self):
+        """Iterative method, perform the three steps until determining equations does not change.
+        """
+        while True:
+            check_against = deepcopy(self.determining_equations)
+            self.simplify_redundant_equations()
+            self.find_first_derivative_equals_0()
+            self.find_deleted_items_in_equations()
+            self.delete_derivatives()
+
+            if check_against == self.determining_equations:
+                break
+
+    def print_determining_equations(self):
+        """Prints determining equations as symbolic using sympy Matrix."""
+        return self._print_symbolic_equations(
+            self.determining_equations, 'determining')
+
+    def print_general_form(self):
+        """Prints general form as symbolic using sympy Matrix."""
+        print('already deleted:', self.deleted)
+        print('general form:')
+        return self._print_symbolic_equations(
+            self.general_form, 'general')
+
+    def _print_symbolic_equations(self, equations, type):
+        """Gives the symbolic version of remaining determining equation.
+
+        Parameters
+        ----------
+        det_eqn : dict
+            dictionary will all the determining equations.
+        """
+        matrix = sympy.Matrix([[]])
+        i = 0
+        for variable, eqns in equations.items():
+            row = None
+            if type == 'determining':
+                i += 1
+                row = sympy.Matrix([[i, sympy.Eq(get_symbolic_terms(
+                    eqns, self.parsed_variables, self.constants, self.all_variables), 0)]])
+                matrix = matrix.row_insert(i, row)
+
+            elif type == 'general':
+                for var, dependencies in eqns.items():
+                    row = sympy.Matrix(
+                        [f"{variable}({','.join([str(dep) for dep in dependencies])})^{var} "])
+                    matrix = matrix.row_insert(i, row)
+
+        return matrix
