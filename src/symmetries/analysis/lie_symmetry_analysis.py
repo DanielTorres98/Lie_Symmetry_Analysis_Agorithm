@@ -2,7 +2,6 @@
 simplifying the equations."""
 import warnings
 
-from symmetries.utils.symbolic import sym_det_eqn
 from symmetries.utils.latex import latex_det_eqn
 from symmetries.objects.system import System
 from symmetries.objects.determining_equations import DeterminingEquations
