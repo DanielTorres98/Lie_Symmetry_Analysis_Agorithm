@@ -20,12 +20,14 @@ def point_symmetries(
     # a matrix to show the determining equations.
     warnings.filterwarnings("ignore", category=DeprecationWarning)
 
+    variables = {'independent_variables': independent_variables,
+                 'dependent_variables': dependent_variables,
+                 'constants': constants}
+
     model = System(
         differential_equation=differential_equation,
-        independent_variables=independent_variables,
-        dependent_variables=dependent_variables,
-        constants=constants,
         order=order,
+        **variables
     )
     # This section of the code generates the infitesimals for all the independent variables and
     # dependent variables.
@@ -42,6 +44,7 @@ def point_symmetries(
     system_of_equations = DeterminingEquations(
         system=model,
         rules_array=f_rules_array,
+        **variables
     )
     # Applying the group operator over the function F.
     #
@@ -53,7 +56,8 @@ def point_symmetries(
     system_of_equations.get_common_factors()
     system_of_equations.get_determining_equations()
     system_of_equations.encode_determining_equations()
-    system_of_equations.simplify_redundant_equations()
+
+    system_of_equations.simplify_iteratively()
 
     det_eqn = system_of_equations.determining_equations
     # If latex=True prints the latex code for the determining equations.
@@ -76,4 +80,4 @@ def point_symmetries(
         latex_code = latex_code.replace("+-", "-")
         return print(latex_code)
 
-    return model, system_of_equations
+    return system_of_equations

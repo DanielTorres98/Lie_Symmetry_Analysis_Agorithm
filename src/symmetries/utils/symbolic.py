@@ -137,3 +137,30 @@ def get_symbolic_terms(eqn, var_dict, list_cte, var_list):
         a += dict_to_symb(term, var_dict, var_list,
                              sym_cte_list, one_term)
     return a
+
+def parse_variables(independent_variables, dependent_variables):
+    """Creates dictionary with translation to symbolic terms of variables.
+
+    Returns
+    -------
+    dictionary
+        Creates key value pairs passing for example xit to xi^(t).
+    """
+    var_dict = {}
+
+    indep_var_str = [str(ele).replace(' ', '')
+                        for ele in independent_variables]
+    for dep_var in indep_var_str:
+        var = dep_var.split('(')[0]
+        if len(var) > 1:
+            var_dict[f'xi{var}'] = f'eta^({var})'
+        else:
+            var_dict[f'xi{var}'] = f'xi^({var})'
+
+    dep_var_str = [str(ele).replace(' ', '')
+                    for ele in dependent_variables]
+    for dep_var in dep_var_str:
+        var = dep_var.split('(')[0]
+        var_dict[f'eta{var}'] = f'eta^({var})'
+
+    return var_dict
