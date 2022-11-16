@@ -57,27 +57,6 @@ def point_symmetries(
     system_of_equations.get_determining_equations()
     system_of_equations.encode_determining_equations()
 
-    system_of_equations.simplify_iteratively()
-
-    det_eqn = system_of_equations.determining_equations
-    # If latex=True prints the latex code for the determining equations.
-    #
-    # TODO: Fix Latex printing
-    #
-    if latex:
-        all_variables = independent_variables+dependent_variables+constants
-        backslash_char = "\\"
-        latex_dict = {}
-        for index, variable in enumerate(independent_variables):
-            # If the string length of the variable is bigger than one assumes it is a greek letter.
-            #
-            if len(str(variable)) > 1:
-                latex_dict[f'xse{str(index+1)}'] = f'xi^{"{"}{backslash_char}{variable}'
-            else:
-                latex_dict[f'xse{str(index+1)}'] = f'xi^{"{"}{variable}{"}"}'
-        latex_code = latex_det_eqn(
-            det_eqn, latex_dict, all_variables, constants)
-        latex_code = latex_code.replace("+-", "-")
-        return print(latex_code)
+    # system_of_equations.simplify_iteratively()
 
     return system_of_equations

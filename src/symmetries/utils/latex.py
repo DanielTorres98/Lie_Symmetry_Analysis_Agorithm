@@ -32,7 +32,7 @@ def dict_to_latex(term, var_dict, var_list,
         coeff = ''
     else:
         for cte, n in cte_power:
-            if len(cte)>1:
+            if len(str(cte))>1:
                 if n == 1:
                     a = a + "\\" + str(cte)
                 if n > 1:
@@ -73,7 +73,7 @@ def latex_derivative(list_devs, var, var_list):
     var_str = '\\' + var
     for D, v in D_v:
         for _ in range(D):
-            if len(v)>1:
+            if len(str(v))>1:
                 if '_' in var_str:
                     var_str = var_str + "\\" +  v
                 else:
