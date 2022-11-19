@@ -39,9 +39,13 @@ class DeterminingEquations(SystemOfEquations):
         variables = self.all_variables + self.model.derivatives_subscript_notation
         l_f = 0
         for var, inft in zip(variables, self.model.infinitesimals):
-            l_f += inft * \
-                sympy.Derivative(self.model.differential_equation, var)
+            var_sym = sympy.symbols(str(var).split("(")[0])
+            A = sympy.Derivative(self.model.differential_equation, var_sym)
+            l_f += inft * A
         self.determining_equations_extended = sympy.simplify(l_f)
+        for var_2 in self.dependent_variables:
+            var_sym_2 = sympy.symbols(str(var_2).split("(")[0])
+            self.determining_equations_extended = self.determining_equations_extended.xreplace({var_sym_2: var_2})
 
     def variable_relabeling(self):
         """Relabels the determining equation extended version with the derivatives, subscript
@@ -244,7 +248,7 @@ class DeterminingEquations(SystemOfEquations):
                     exit_param += 1
                 if len(det_eqns_aux[idx]) == 1:
                     zero_terms[idx] = det_eqns_aux[idx][0]
-                if exit_param > len(det_eqns):
+                if exit_param > len(det_eqns) or (exit_param==0 and idx==len(det_eqns)-1):
                     simplify = False
             det_eqns = deepcopy(det_eqns_aux)
 
@@ -330,9 +334,9 @@ class DeterminingEquations(SystemOfEquations):
         while True:
             check_against = deepcopy(self.determining_equations)
             self.simplify_redundant_equations()
-            # self.find_first_derivative_equals_0()
-            # self.find_deleted_items_in_equations()
-            # self.delete_derivatives()
+            self.find_first_derivative_equals_0()
+            self.find_deleted_items_in_equations()
+            self.delete_derivatives()
 
             if check_against == self.determining_equations:
                 break
@@ -394,9 +398,9 @@ class DeterminingEquations(SystemOfEquations):
             #
             var = str(variable).split("(")[0]
             if len(str(var)) > 1:
-                latex_dict[f'eta{var}'] = f'eta^{"{"}{backslash_char}{variable}'
+                latex_dict[f'eta{var}'] = f'eta^{"{"}{backslash_char}{var}{"}"}'
             else:
-                latex_dict[f'eta{var}'] = f'eta^{"{"}{variable}{"}"}'
+                latex_dict[f'eta{var}'] = f'eta^{"{"}{var}{"}"}'
             var_list.append(var)
         constants = []
         for cte in self.constants:

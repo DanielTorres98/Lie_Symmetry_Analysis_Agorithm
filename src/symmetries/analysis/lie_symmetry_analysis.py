@@ -50,13 +50,13 @@ def point_symmetries(
     #
     system_of_equations.get_group_operator()
     # Relabel derivatives of variables as new symbols to be able to take partial derivatives.
-    #
+    
     system_of_equations.variable_relabeling()
     system_of_equations.simplify_rules_array()
     system_of_equations.get_common_factors()
     system_of_equations.get_determining_equations()
     system_of_equations.encode_determining_equations()
 
-    # system_of_equations.simplify_iteratively()
+    system_of_equations.simplify_iteratively()
 
     return system_of_equations

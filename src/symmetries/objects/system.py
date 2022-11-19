@@ -158,3 +158,6 @@ class System(SystemOfEquations):
 
         for new, old in zip(new_labeling, previous_labeling):
             self.differential_equation = self.differential_equation.xreplace({old: new})
+        for var in self.dependent_variables:
+            var_sym = sympy.symbols(str(var).split("(")[0])
+            self.differential_equation = self.differential_equation.xreplace({var: var_sym})
