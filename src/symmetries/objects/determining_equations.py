@@ -40,8 +40,9 @@ class DeterminingEquations(SystemOfEquations):
         l_f = 0
         for var, inft in zip(variables, self.model.infinitesimals):
             var_sym = sympy.symbols(str(var).split("(")[0])
-            A = sympy.Derivative(self.model.differential_equation, var_sym)
-            l_f += inft * A
+            if str(var_sym) in str(self.model.differential_equation):
+                A = sympy.Derivative(self.model.differential_equation, var_sym)
+                l_f += inft * A
         self.determining_equations_extended = sympy.simplify(l_f)
         for var_2 in self.dependent_variables:
             var_sym_2 = sympy.symbols(str(var_2).split("(")[0])
