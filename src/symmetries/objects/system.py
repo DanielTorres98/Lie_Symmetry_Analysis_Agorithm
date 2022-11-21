@@ -10,7 +10,7 @@ from .system_of_equations import SystemOfEquations
 from typing import Union
 
 
-class System(SystemOfEquations):
+class Model(SystemOfEquations):
     """System of equations base class."""
 
     def __init__(self,

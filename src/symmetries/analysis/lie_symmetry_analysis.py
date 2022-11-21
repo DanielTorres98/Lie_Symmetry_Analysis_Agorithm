@@ -3,7 +3,7 @@ simplifying the equations."""
 import warnings
 
 from symmetries.utils.latex import latex_det_eqn
-from symmetries.objects.system import System
+from symmetries.objects.system import Model
 from symmetries.objects.determining_equations import DeterminingEquations
 
 
@@ -24,7 +24,7 @@ def point_symmetries(
                  'dependent_variables': dependent_variables,
                  'constants': constants}
 
-    model = System(
+    model = Model(
         differential_equation=differential_equation,
         order=order,
         **variables
@@ -42,17 +42,11 @@ def point_symmetries(
     # Initiating the determining_equations class
     #
     system_of_equations = DeterminingEquations(
-        system=model,
+        model=model,
+        differential_equation=model.differential_equation,
         rules_array=f_rules_array,
         **variables
     )
-    # Applying the group operator over the function F.
-    #
-    system_of_equations.get_group_operator()
-    # Relabel derivatives of variables as new symbols to be able to take partial derivatives.
-    
-    system_of_equations.variable_relabeling()
-    system_of_equations.simplify_rules_array()
     system_of_equations.get_common_factors()
     system_of_equations.get_determining_equations()
     system_of_equations.encode_determining_equations()
