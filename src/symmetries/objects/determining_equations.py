@@ -4,10 +4,10 @@ from copy import deepcopy
 import sympy
 import numpy as np
 from symmetries.utils.algebra import key_ordering, str_to_dict, is_zero
-from symmetries.utils.symbolic import get_symbolic_terms, parse_variables
+from symmetries.utils.latex import latex_det_eqn
+from symmetries.utils.symbolic import sym_det_eqn, parse_variables
 from .system_of_equations import SystemOfEquations
 from .system import System
-
 
 class DeterminingEquations(SystemOfEquations):
     """Class"""
@@ -39,9 +39,14 @@ class DeterminingEquations(SystemOfEquations):
         variables = self.all_variables + self.model.derivatives_subscript_notation
         l_f = 0
         for var, inft in zip(variables, self.model.infinitesimals):
-            l_f += inft * \
-                sympy.Derivative(self.model.differential_equation, var)
+            var_sym = sympy.symbols(str(var).split("(")[0])
+            if str(var_sym) in str(self.model.differential_equation):
+                A = sympy.Derivative(self.model.differential_equation, var_sym)
+                l_f += inft * A
         self.determining_equations_extended = sympy.simplify(l_f)
+        for var_2 in self.dependent_variables:
+            var_sym_2 = sympy.symbols(str(var_2).split("(")[0])
+            self.determining_equations_extended = self.determining_equations_extended.xreplace({var_sym_2: var_2})
 
     def variable_relabeling(self):
         """Relabels the determining equation extended version with the derivatives, subscript
@@ -189,6 +194,10 @@ class DeterminingEquations(SystemOfEquations):
             for str_term in eqn:
                 arr_pow = np.zeros(len(list_all))
                 arr_deriv = np.zeros(len(list_var))
+                # Coefficient is the number multiplying the whole term. Power is the exponent of
+                # each constant/variable, it should be a list as big as the number of constants +
+                # number variables (independent + dependent). Derivatives is the order of the
+                # derivative. Variable is the variable name.
                 term = {"coefficient": 1, "constants": None,
                         "derivatives": None, "variable": None}
                 aux_list.append(str_to_dict(sympy.sympify(str_term), term, arr_pow,
@@ -240,7 +249,7 @@ class DeterminingEquations(SystemOfEquations):
                     exit_param += 1
                 if len(det_eqns_aux[idx]) == 1:
                     zero_terms[idx] = det_eqns_aux[idx][0]
-                if exit_param > len(det_eqns):
+                if exit_param > len(det_eqns) or (exit_param==0 and idx==len(det_eqns)-1):
                     simplify = False
             det_eqns = deepcopy(det_eqns_aux)
 
@@ -261,8 +270,11 @@ class DeterminingEquations(SystemOfEquations):
                         self.all_variables, item['derivatives']) if order][0]
                     if not ((item['variable'] in self.deleted) and (
                             var in self.deleted[item['variable']])):
-                        self.general_form[item['variable'][:-1]
-                                          ][item['variable'][-1]].remove(var)
+                        x=2
+                        if "eta" in item['variable']:
+                            x=3
+                        self.general_form[item['variable'][:x]
+                                          ][item['variable'][x:]].remove(var)
                         if item['variable'] not in self.deleted:
                             self.deleted[item['variable']] = [var]
                             print('deleting', item['variable'], var)
@@ -350,20 +362,51 @@ class DeterminingEquations(SystemOfEquations):
         det_eqn : dict
             dictionary will all the determining equations.
         """
-        matrix = sympy.Matrix([[]])
-        i = 0
-        for variable, eqns in equations.items():
-            row = None
-            if type == 'determining':
-                i += 1
-                row = sympy.Matrix([[i, sympy.Eq(get_symbolic_terms(
-                    eqns, self.parsed_variables, self.constants, self.all_variables), 0)]])
-                matrix = matrix.row_insert(i, row)
+        if type == 'determining':
+            matrix = sym_det_eqn(equations, self.independent_variables, self.dependent_variables,
+                                 self.constants)
+        elif type == 'general':
+            matrix = sympy.Matrix([[]])
+            i = 0
+            for variable, eqns in equations.items():
+                row = None
+                    # row = sympy.Matrix([[i, sympy.Eq(get_symbolic_terms(
+                    #     eqns, self.parsed_variables, self.constants, self.all_variables), 0)]])
+                    # matrix = matrix.row_insert(i, row)
 
-            elif type == 'general':
                 for var, dependencies in eqns.items():
                     row = sympy.Matrix(
                         [f"{variable}({','.join([str(dep) for dep in dependencies])})^{var} "])
                     matrix = matrix.row_insert(i, row)
 
         return matrix
+
+    def print_latex(self):
+        backslash_char = "\\"
+        latex_dict = {}
+        var_list = []
+        for variable in self.independent_variables:
+            # If the string length of the variable is bigger than one assumes it is a greek letter.
+            #
+            var = str(variable)
+            if len(str(var)) > 1:
+                latex_dict[f'xi{var}'] = f'xi^{"{"}{backslash_char}{variable}'
+            else:
+                latex_dict[f'xi{var}'] = f'xi^{"{"}{variable}{"}"}'
+            var_list.append(var)
+        for variable in self.dependent_variables:
+            # If the string length of the variable is bigger than one assumes it is a greek letter.
+            #
+            var = str(variable).split("(")[0]
+            if len(str(var)) > 1:
+                latex_dict[f'eta{var}'] = f'eta^{"{"}{backslash_char}{var}{"}"}'
+            else:
+                latex_dict[f'eta{var}'] = f'eta^{"{"}{var}{"}"}'
+            var_list.append(var)
+        constants = []
+        for cte in self.constants:
+            constants.append(str(cte))
+        latex_code = latex_det_eqn(
+            self.determining_equations, latex_dict, var_list, constants)
+        latex_code = latex_code.replace("+-", "-")
+        return print(latex_code)
