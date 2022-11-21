@@ -7,31 +7,65 @@ from symmetries.utils.algebra import key_ordering, str_to_dict, is_zero
 from symmetries.utils.latex import latex_det_eqn
 from symmetries.utils.symbolic import sym_det_eqn, parse_variables
 from .system_of_equations import SystemOfEquations
-from .system import System
+from .system import Model
+from typing import Union
+
 
 class DeterminingEquations(SystemOfEquations):
     """Class"""
 
     def __init__(self,
-                 rules_array: dict,
-                 system: System,
+                 model: Model,
+                 rules_array: Union[dict, list],
+                 differential_equation: Union[sympy.core.add.Add, list],
                  independent_variables: list,
                  dependent_variables: list,
                  constants: list,
                  ):
 
-        self.model = system
+        self.model = model
         self.rules_array = rules_array
+        self.differential_equation = differential_equation
 
-        self.determining_equations_extended = ""
-        self.determining_equations = {}
+        self.determining_equations_extended: sympy.core.add.Add = 0  # type: ignore
+        self.determining_equations: dict = {}
 
         super().__init__(independent_variables, dependent_variables, constants)
 
         self.general_form = self.obtain_general_form()
         self.parsed_variables = parse_variables(
             independent_variables, dependent_variables)
-        self.deleted = {}
+        self.deleted: dict = {}
+
+        if isinstance(rules_array, list):
+            # Recursive method to obtain determining equations extended from a system of equations.
+            assert isinstance(
+                differential_equation, list), 'differential equation is not list but rules array is'
+
+            det_eqns = []
+            for dif_eq, rules in zip(differential_equation, rules_array):
+                det_eqn = DeterminingEquations(
+                    model=model,
+                    differential_equation=dif_eq,
+                    rules_array=rules,
+                    independent_variables=independent_variables,
+                    dependent_variables=dependent_variables,
+                    constants=constants
+                )
+                det_eqns.append(det_eqn.determining_equations_extended)
+
+            for equations in det_eqns:
+                self.determining_equations_extended += equations
+
+        else:
+            # Applying the group operator over the function F.
+            #
+            self.get_group_operator()
+            # Relabel derivatives of variables as new symbols to be able to take partial
+            # derivatives.
+            #
+            self.variable_relabeling()
+            self.simplify_rules_array()
 
     def get_group_operator(self):
         """Given a differential equation F, gives the Lie operator acting over F.
@@ -40,9 +74,10 @@ class DeterminingEquations(SystemOfEquations):
         l_f = 0
         for var, inft in zip(variables, self.model.infinitesimals):
             var_sym = sympy.symbols(str(var).split("(")[0])
-            if str(var_sym) in str(self.model.differential_equation):
-                A = sympy.Derivative(self.model.differential_equation, var_sym)
+            if str(var_sym) in str(self.differential_equation):
+                A = sympy.Derivative(self.differential_equation, var_sym)
                 l_f += inft * A
+
         self.determining_equations_extended = sympy.simplify(l_f)
         for var_2 in self.dependent_variables:
             var_sym_2 = sympy.symbols(str(var_2).split("(")[0])
@@ -249,7 +284,7 @@ class DeterminingEquations(SystemOfEquations):
                     exit_param += 1
                 if len(det_eqns_aux[idx]) == 1:
                     zero_terms[idx] = det_eqns_aux[idx][0]
-                if exit_param > len(det_eqns) or (exit_param==0 and idx==len(det_eqns)-1):
+                if exit_param > len(det_eqns) or (exit_param == 0 and idx == len(det_eqns)-1):
                     simplify = False
             det_eqns = deepcopy(det_eqns_aux)
 
@@ -270,9 +305,9 @@ class DeterminingEquations(SystemOfEquations):
                         self.all_variables, item['derivatives']) if order][0]
                     if not ((item['variable'] in self.deleted) and (
                             var in self.deleted[item['variable']])):
-                        x=2
+                        x = 2
                         if "eta" in item['variable']:
-                            x=3
+                            x = 3
                         self.general_form[item['variable'][:x]
                                           ][item['variable'][x:]].remove(var)
                         if item['variable'] not in self.deleted:
@@ -314,7 +349,7 @@ class DeterminingEquations(SystemOfEquations):
                     self.all_variables, item['derivatives']) if order > 1]
                 if any(var in self.deleted[item['variable']] for var in variables):
                     print('found high order derivative of deleted variable in',
-                            item['variable'], 'eq', k)
+                          item['variable'], 'eq', k)
                     del self.determining_equations[k]
                     deleted = True
 
@@ -324,9 +359,9 @@ class DeterminingEquations(SystemOfEquations):
                 if len(variables) > 1 and not deleted:
                     if any(var in self.deleted[item['variable']] for var in variables):
                         print('found cross derivative of variable in',
-                                item['variable'], 'eq', k)
+                              item['variable'], 'eq', k)
                         del self.determining_equations[k]
-            if len(eq)==0:
+            if len(eq) == 0:
                 del self.determining_equations[k]
 
     def simplify_iteratively(self):
@@ -370,9 +405,9 @@ class DeterminingEquations(SystemOfEquations):
             i = 0
             for variable, eqns in equations.items():
                 row = None
-                    # row = sympy.Matrix([[i, sympy.Eq(get_symbolic_terms(
-                    #     eqns, self.parsed_variables, self.constants, self.all_variables), 0)]])
-                    # matrix = matrix.row_insert(i, row)
+                # row = sympy.Matrix([[i, sympy.Eq(get_symbolic_terms(
+                #     eqns, self.parsed_variables, self.constants, self.all_variables), 0)]])
+                # matrix = matrix.row_insert(i, row)
 
                 for var, dependencies in eqns.items():
                     row = sympy.Matrix(
