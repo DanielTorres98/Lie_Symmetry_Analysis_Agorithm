@@ -44,16 +44,15 @@ class Variable():
         elif isinstance(other, Mul):
             results = []
             for term in other.terms:
-                res = self.__mul__(term)
+                res = self*term
                 results.append(res)
             return Mul(terms=tuple(results), coefficient=other.coefficient)
 
         elif isinstance(other, Add):
             results = []
             for term in other.terms:
-                res = self.__mul__(term)
+                res = self*term
                 results.append(res)
-
             return Add(terms=tuple(results))
 
 
@@ -106,11 +105,15 @@ class Mul():
 
         if isinstance(other, Variable):
             terms = []
+            inside = False
             for term in self.terms:
                 if term.name==other.name:
                     terms.append(other*term)
+                    inside=True
                 else:
                     terms.append(term)
+            if not inside:
+                terms.append(other)
             res = deepcopy(self)
             res.terms = tuple(terms)
             return res
@@ -121,10 +124,16 @@ class Mul():
             return res
 
         elif isinstance(other, Mul):
-            pass
+            coeff=self.coefficient*other.coefficient
+            terms = []
+            for term_outer in self.terms:
+                for term_inner in other.terms:
+                    terms.append(term_outer*term_inner)
+            return Mul(tuple(terms), coefficient=coeff)
 
         elif isinstance(other, Add):
             pass
+
 class Add():
     """Class for addition of multiple terms."""
 
