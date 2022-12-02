@@ -23,12 +23,12 @@ class Variable():
         return (self.name == other.name)
 
     def __mul__(self, other):
-
+        """Multiplication method for variables."""
         if isinstance(other, DependentVariable):
-            if other==self:
-                return DependentVariable(self.name, other.power+self.power, other.dependencies , other.derivatives)
+            if other == self:
+                return DependentVariable(self.name, other.power+self.power, other.dependencies, other.derivatives)
             return Mul((self, other))
-        
+
         elif isinstance(other, Variable):
             if other.name == self.name:
                 return Variable(self.name, other.power+self.power)
@@ -54,6 +54,7 @@ class Variable():
 
 
 class DependentVariable(Variable):
+    """Class for dependent variables, child class of variables."""
 
     def __init__(self, name: str, power: int = 1, dependencies: tuple = (), derivatives: tuple = ()) -> None:
         self.derivatives = derivatives
@@ -76,6 +77,8 @@ class DependentVariable(Variable):
 
 
 class Mul():
+    """Class for multiplication of multiple terms."""
+
     def __init__(self, terms: tuple = (), coefficient: float = 1) -> None:
         self.coefficient = coefficient
         # Tuple[Union[Add, Mul, Variable, DependentVariable]]
@@ -89,8 +92,9 @@ class Mul():
 
 
 class Add():
+    """Class for addition of multiple terms."""
+
     def __init__(self, terms: tuple = ()) -> None:
-        # Tuple[Union[Add, Mul, Variable, DependentVariable]]
         self.terms = terms
 
     def __repr__(self):
