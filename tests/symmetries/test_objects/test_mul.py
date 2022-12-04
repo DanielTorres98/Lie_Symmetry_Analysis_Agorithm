@@ -12,5 +12,7 @@ x_times_2 = x*2
 x_plus_2 = x+2
 
 def test_x_times_2_squared():
-    assert x_times_2*x_times_2==x_times_2**2
-    assert x_times_2*x_times_2.__str__()=='4x^2'
+    assert (x_times_2*x_times_2).__str__()=='4x^2'
+
+def test_x_plus_2_squared():
+    assert (x_plus_2*x_plus_2).__str__()=='x^2+4x+4'

@@ -15,7 +15,10 @@ class Mul():
             return self.terms == other.terms
             # they have to be in the same order, need a way to sort them
         else:
-            return other == self
+            if len(self.terms)==1:
+                return other in self.terms
+            else:
+                return False
 
     def __repr__(self):
         display = f'{self.coefficient}' if self.coefficient != 1 else ''

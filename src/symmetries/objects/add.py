@@ -29,7 +29,11 @@ class Add():
 
     def __mul__(self, other):
         if isinstance(other, Add):
-            additions = [self*term for term in other.terms]
+            additions = []
+            for inner_term in self.terms:
+                for outer_term in other.terms:
+                    additions.append(inner_term*outer_term)
+
             base = additions[0]
             for expansion in additions[1:]:
                 base = base+expansion
