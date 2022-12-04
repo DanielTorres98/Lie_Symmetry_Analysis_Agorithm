@@ -39,7 +39,7 @@ class Variable():
             return Mul((self, other))
 
         elif isinstance(other, float) or isinstance(other, int):
-            return Mul((self,), coeff=other)
+            return Mul((self,), coefficient=other)
 
         elif isinstance(other, Mul):
             results = []
@@ -54,6 +54,25 @@ class Variable():
                 res = self*term
                 results.append(res)
             return Add(terms=tuple(results))
+        
+    def __add__(self, other):
+        if isinstance(other, Variable):
+            if other == self:
+                return Mul((self,), coefficient=2)
+            else:
+                return Add((self, other))
+
+        elif isinstance(other, float) or isinstance(other, int):
+            return Add((self, other))
+
+        elif isinstance(other, Mul):
+            if len(other.terms)==1 and other.terms[0]==self:
+                coeff = other.coefficient +1
+                return Mul((self,), coefficient=coeff)
+            return Add((self, other))
+
+        elif isinstance(other, Add):
+            return Add(terms=other.terms+(self,))
 
 
 class DependentVariable(Variable):
@@ -72,7 +91,10 @@ class DependentVariable(Variable):
 
 
     def __eq__(self, other):
-        return (self.name == other.name and self.derivatives == other.derivatives)
+        if isinstance(other, DependentVariable):    
+            return (self.name == other.name and self.derivatives == other.derivatives and self.power == other.power)
+        else:
+            return False
 
     def __repr__(self):
         display = f'{self.symbol}('
@@ -145,3 +167,6 @@ class Add():
         for term in self.terms:
             display += f'{term.__repr__()}+'
         return display[:-1]
+
+    def __eq__(self):
+        pass
