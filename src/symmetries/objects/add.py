@@ -41,7 +41,8 @@ class Add():
             else:
                 return 0
         else:
-            return Add(tuple([other*term for term in self.terms]))
+            terms = [term*other for term in self.terms]
+            return Add(tuple(terms))
 
     def __rmul__(self, other):
         return self*other

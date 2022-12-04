@@ -1,6 +1,5 @@
-from variables import Variable
 from copy import deepcopy
-from add import Add
+from .add import Add
 
 
 class Mul():
@@ -13,12 +12,10 @@ class Mul():
 
     def __eq__(self, other):
         if isinstance(other, Mul):
-            return (self.terms == other.terms)
+            return self.terms == other.terms
             # they have to be in the same order, need a way to sort them
-        elif isinstance(other, Variable):
-            return other == self
         else:
-            return False
+            return other == self
 
     def __repr__(self):
         display = f'{self.coefficient}' if self.coefficient != 1 else ''
@@ -30,23 +27,7 @@ class Mul():
 
     def __mul__(self, other):
         """Multiplication method for variables."""
-        if isinstance(other, Variable):
-            terms = []
-            inside = False
-            for term in self.terms:
-                if term.name == other.name:
-                    terms.append(other*term)
-                    inside = True
-                else:
-                    terms.append(term)
-            if not inside:
-                terms.append(other)
-            res = deepcopy(self)
-            terms.sort(key=lambda x: x.name)
-            res.terms = tuple(terms)
-            return res
-
-        elif isinstance(other, float) or isinstance(other, int):
+        if isinstance(other, float) or isinstance(other, int):
             if other:
                 res = deepcopy(self)
                 res.coefficient *= other
@@ -71,18 +52,25 @@ class Mul():
                 addition_terms.append(self*term)
             return Add(tuple(addition_terms))
 
+        else: # variable
+            result = deepcopy(self)
+            if other in result.terms:
+                terms = []
+                for term in result.terms:
+                    if term==other:
+                        terms.append(term*other)
+                    else:
+                        terms.append(term)
+                return Mul(tuple(terms), self.coefficient)
+            else:
+                result.terms += (other,)
+                return result
+
     def __rmul__(self, other):
         return self*other
 
     def __add__(self, other):
-        if isinstance(other, Variable):
-            if other == self:
-                coeff = self.coefficient+1
-                return Mul((self.terms[0],), coeff)
-            else:
-                return Add((self, other))
-
-        elif isinstance(other, float) or isinstance(other, int):
+        if isinstance(other, float) or isinstance(other, int):
             if other:
                 return Add((self, other))
             else:
@@ -106,12 +94,18 @@ class Mul():
                 if isinstance(term, Mul) and self == term:
                     addition_terms.append(term+self)
                     accounted_for_self = True
-                elif isinstance(term, Variable):
-                    if term == self:
-                        addition_terms.append(term+self)
-                        accounted_for_self = True
+                elif term == self:
+                    addition_terms.append(term+self)
+                    accounted_for_self = True
                 else:
                     addition_terms.append(term)
             if not accounted_for_self:
                 addition_terms.append(self)
             return Add(tuple(addition_terms))
+        
+        else:
+            if other == self:
+                coeff = self.coefficient+1
+                return Mul(self.terms, coeff)
+            else:
+                return Add((self, other))
