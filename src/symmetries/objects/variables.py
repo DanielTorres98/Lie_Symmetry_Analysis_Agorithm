@@ -1,6 +1,7 @@
 from symmetries.utils.constants import greek_alphabet
-from add import Add
-
+from .add import Add
+from .mul import Mul
+from copy import deepcopy
 
 class Variable():
     """Class for independent variables."""
@@ -29,7 +30,17 @@ class Variable():
         """Multiplication method for variables."""
         if isinstance(other, Variable):
             if other.name == self.name:
-                return Power(self, 2)
+                if isinstance(other, Power):
+                    power = other.power
+                else:
+                    power = 1
+                if isinstance(self, Power):
+                    power += self.power
+                    return Power(self.term, power)
+                else:
+                    power += 1
+                return Power(self, power)
+
             else:
                 terms = [self, other]
                 terms.sort(key=lambda x: x.name)
@@ -42,10 +53,10 @@ class Variable():
                 return 0
 
         elif isinstance(other, Mul):
-            res = self
+            res = deepcopy(self)
             for term in other.terms:
                 res = res*term
-            return Mul(terms=res.terms, coefficient=other.coefficient)
+            return Mul(terms=(res,), coefficient=other.coefficient)
 
         elif isinstance(other, Add):
             results = []
@@ -56,6 +67,28 @@ class Variable():
 
     def __rmul__(self, other):
         return self*other
+
+    def __pow__(self, other:int):
+        if isinstance(self, Power):
+            power = self.power+other
+            return Power(self.term, power)
+        else:
+            return Power(self, other)
+
+    def __sub__(self, other):
+        if isinstance(other, Variable):
+            return self+Mul((other,), -1)
+
+        elif isinstance(other, float) or isinstance(other, int):
+            return self+(-other)
+
+        elif isinstance(other, Mul):
+            result = deepcopy(other)
+            result.coefficient *= -1
+            return self+result
+
+        elif isinstance(other, Add):
+            raise
 
     def __add__(self, other):
         """Addition method for variables."""
@@ -73,9 +106,9 @@ class Variable():
 
         elif isinstance(other, Mul):
             if len(other.terms) == 1 and other.terms[0] == self:
-                coeff = other.coefficient + 1
-                if coeff:
-                    return Mul((self,), coefficient=coeff)
+                coefficient = other.coefficient + 1
+                if coefficient:
+                    return Mul((self,), coefficient)
                 else:
                     return 0
             else:
@@ -87,7 +120,7 @@ class Variable():
 
 class Power(Variable):
 
-    def __init__(self, term: Variable, power):
+    def __init__(self, term, power):
         self.power = power
         self.term = term
         self.name = term.name
@@ -96,8 +129,10 @@ class Power(Variable):
         if isinstance(other, Mul):
             if len(other.terms) == 1:
                 return other.terms[0] == self
-        else:
+        elif isinstance(other, Power):
             return (self.name == other.name and self.power == other.power)
+        else:
+            return False
 
     def __repr__(self):
         display = self.term.__repr__()
