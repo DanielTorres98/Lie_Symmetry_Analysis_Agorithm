@@ -41,7 +41,10 @@ class Variable():
                 return Mul((self, other))
 
         elif isinstance(other, float) or isinstance(other, int):
-            return Mul((self,), coefficient=other)
+            if other:
+                return Mul((self,), coefficient=other)
+            else:
+                return 0
 
         elif isinstance(other, Mul):
             results = []
@@ -66,13 +69,20 @@ class Variable():
                 return Add((self, other))
 
         elif isinstance(other, float) or isinstance(other, int):
-            return Add((self, other))
+            if other:
+                return Add((self, other))
+            else:
+                return self
 
         elif isinstance(other, Mul):
             if len(other.terms) == 1 and other.terms[0] == self:
                 coeff = other.coefficient + 1
-                return Mul((self,), coefficient=coeff)
-            return Add((self, other))
+                if coeff:
+                    return Mul((self,), coefficient=coeff)
+                else:
+                    return 0
+            else:
+                return Add((self, other))
 
         elif isinstance(other, Add):
             return Add(terms=other.terms+(self,))
@@ -128,9 +138,6 @@ class Mul():
             return False
 
     def __repr__(self):
-        if self.coefficient == 0:
-            return '0'
-
         display = f'{self.coefficient}' if self.coefficient != 1 else ''
         if display == '-1':
             display = '-'
@@ -156,9 +163,12 @@ class Mul():
             return res
 
         elif isinstance(other, float) or isinstance(other, int):
-            res = deepcopy(self)
-            res.coefficient *= other
-            return res
+            if other:
+                res = deepcopy(self)
+                res.coefficient *= other
+                return res
+            else:
+                return 0
 
         elif isinstance(other, Mul):
             coeff = self.coefficient*other.coefficient
@@ -166,7 +176,10 @@ class Mul():
             for term_outer in self.terms:
                 for term_inner in other.terms:
                     terms.append(term_outer*term_inner)
-            return Mul(tuple(terms), coefficient=coeff)
+            if coeff:
+                return Mul(tuple(terms), coefficient=coeff)
+            else:
+                0
 
         elif isinstance(other, Add):
             addition_terms = []
@@ -180,18 +193,24 @@ class Mul():
                 coeff = self.coefficient+1
                 return Mul((self.terms[0],), coeff)
             else:
-                return Add(terms=(self, other))
+                return Add((self, other))
 
         elif isinstance(other, float) or isinstance(other, int):
-            return Add(terms=(self, other))
+            if other:
+                return Add((self, other))
+            else:
+                return self
 
         elif isinstance(other, Mul):
             if other == self:
                 res = deepcopy(self)
                 res.coefficient += other.coefficient
-                return res
+                if res.coefficient:
+                    return res
+                else:
+                    return 0
             else:
-                return Add(terms=(self, other))
+                return Add((self, other))
 
         elif isinstance(other, Add):
             addition_terms = []
@@ -247,6 +266,9 @@ class Add():
             return base
 
         elif isinstance(other, float) or isinstance(other, int):
-            return Add(tuple([term*other for term in self.terms]))
+            if other:
+                return Add(tuple([term*other for term in self.terms]))
+            else:
+                return 0
         else:
             return Add(tuple([other*term for term in self.terms]))
