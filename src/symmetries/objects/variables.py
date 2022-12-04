@@ -21,22 +21,23 @@ class Variable():
         return display
 
     def __eq__(self, other):
-        return (self.name == other.name)
+        if isinstance(other, Variable):
+            return (self.name == other.name)
+        elif isinstance(other, Mul):
+            if len(other.terms)==1:
+                return other.terms[0]==self
+        else:
+            return False
 
     def __mul__(self, other):
         """Multiplication method for variables."""
-        if isinstance(other, DependentVariable):
+        if isinstance(other, Variable):
             if other.name == self.name:
                 res = deepcopy(self)
                 res.power += other.power
                 return res
             else:
                 return Mul((self, other))
-
-        elif isinstance(other, Variable):
-            if other.name == self.name:
-                return Variable(self.name, other.power+self.power)
-            return Mul((self, other))
 
         elif isinstance(other, float) or isinstance(other, int):
             return Mul((self,), coefficient=other)
@@ -56,6 +57,7 @@ class Variable():
             return Add(terms=tuple(results))
         
     def __add__(self, other):
+        """Addition method for variables."""
         if isinstance(other, Variable):
             if other == self:
                 return Mul((self,), coefficient=2)
@@ -89,7 +91,6 @@ class DependentVariable(Variable):
         self.power = power
         self.name = self.__repr__().split('^')[0]
 
-
     def __eq__(self, other):
         if isinstance(other, DependentVariable):    
             return (self.name == other.name and self.derivatives == other.derivatives and self.power == other.power)
@@ -116,6 +117,14 @@ class Mul():
         # Tuple[Union[Add, Mul, Variable, DependentVariable]]
         self.terms = terms
 
+    def __eq__(self, other):
+        if isinstance(other, Mul):    
+            return (self.terms == other.terms) # they have to be in the same order, need a way to sort them
+        elif isinstance(other, Variable):
+            return other==self
+        else:
+            return False
+
     def __repr__(self):
         display = f'{self.coefficient}' if self.coefficient != 1 else ''
         for term in self.terms:
@@ -124,7 +133,6 @@ class Mul():
 
     def __mul__(self, other):
         """Multiplication method for variables."""
-
         if isinstance(other, Variable):
             terms = []
             inside = False
@@ -154,7 +162,47 @@ class Mul():
             return Mul(tuple(terms), coefficient=coeff)
 
         elif isinstance(other, Add):
-            pass
+            addition_terms = []
+            for term in other.terms:
+                addition_terms.append(self*term)
+            return Add(tuple(addition_terms))
+
+    def __add__(self, other):
+        if isinstance(other, Variable):
+            if other==self:
+                coeff = self.coefficient+1
+                return Mul((self.terms[0],), coeff)
+            else:
+                return Add(terms=(self, other))
+
+        elif isinstance(other, float) or isinstance(other, int):
+            return Add(terms=(self, other))
+
+        elif isinstance(other, Mul):
+            if other==self:
+                res = deepcopy(self)
+                res.coefficient += other.coefficient
+                return res
+            else:
+                return Add(terms=(self, other))
+
+        elif isinstance(other, Add):
+            addition_terms = []
+            accounted_for_self = False
+            for term in other.terms:
+                if isinstance(term, Mul) and self==term:
+                    addition_terms.append(term+self)
+                    accounted_for_self = True
+                elif isinstance(term, Variable):
+                    if term==self:
+                        addition_terms.append(term+self)
+                        accounted_for_self = True
+                else:
+                    addition_terms.append(term)
+            if not accounted_for_self:
+                addition_terms.append(self)
+            return Add(tuple(addition_terms))
+
 
 class Add():
     """Class for addition of multiple terms."""
@@ -168,5 +216,19 @@ class Add():
             display += f'{term.__repr__()}+'
         return display[:-1]
 
-    def __eq__(self):
-        pass
+    def __add__(self, other):
+        if isinstance(other, Add):
+            res = deepcopy(self)
+            for term in other.terms:
+                res = res+term
+            return res
+
+        else:
+            if other in self.terms:
+                addition_terms = [term if term!= other else term+other for term in self.terms]
+                return Add(tuple(addition_terms))
+            else:
+                return Add(self.terms+(other,))
+
+
+
