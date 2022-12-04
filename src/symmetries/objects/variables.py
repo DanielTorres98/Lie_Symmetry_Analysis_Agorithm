@@ -23,7 +23,7 @@ class Variable():
 
     def __eq__(self, other):
         if isinstance(other, Variable):
-            return (self.name == other.name)
+            return (self.name == other.name and self.power == other.power)
         elif isinstance(other, Mul):
             if len(other.terms) == 1:
                 return other.terms[0] == self
