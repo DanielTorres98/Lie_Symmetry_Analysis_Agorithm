@@ -42,9 +42,12 @@ class Mul():
             for term in terms[1:]:
                 base = base*term
             if coeff:
-                return Mul(base.terms, coefficient=coeff)
+                if isinstance(base, Mul):
+                    return Mul(base.terms, coefficient=coeff)
+                else:
+                    return Mul((base,), coefficient=coeff)
             else:
-                0
+                return 0
 
         elif isinstance(other, Add):
             addition_terms = []
