@@ -3,6 +3,7 @@ from .add import Add
 from .mul import Mul
 from copy import deepcopy
 
+
 class Variable():
     """Class for independent variables."""
     greek_alphabet = greek_alphabet
@@ -56,7 +57,10 @@ class Variable():
             res = deepcopy(self)
             for term in other.terms:
                 res = res*term
-            return Mul(terms=(res,), coefficient=other.coefficient)
+
+            terms = list(res.terms)
+            terms.sort(key=lambda x: x.name)
+            return Mul(terms=tuple(terms), coefficient=other.coefficient)
 
         elif isinstance(other, Add):
             results = []
@@ -68,9 +72,9 @@ class Variable():
     def __rmul__(self, other):
         return self*other
 
-    def __pow__(self, other:int):
+    def __pow__(self, other: int):
         if isinstance(self, Power):
-            power = self.power+other
+            power = self.power*other
             return Power(self.term, power)
         else:
             return Power(self, other)

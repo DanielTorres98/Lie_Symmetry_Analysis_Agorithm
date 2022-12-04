@@ -59,3 +59,16 @@ def test_function_p():
 def test_p_times_x():
     assert (p_of_x*x).__str__()=='p(x)*x'
     assert isinstance(p_of_x*x, Mul)
+
+def test_x_times_x_second_power():
+    x_squared = x**2
+    assert (x_squared**2).__str__()=='x^4'
+    del x_squared
+
+def test_x_powers():
+    x_squared = x**2
+    x_to_the_third_power = x**3
+    assert (x_squared*x_to_the_third_power).__str__()=='x^5'
+    assert (x_to_the_third_power**2).__str__()=='x^6'
+
+    del x_squared, x_to_the_third_power
