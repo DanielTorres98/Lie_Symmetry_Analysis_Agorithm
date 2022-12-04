@@ -38,20 +38,21 @@ class Variable():
                 res.power += other.power
                 return res
             else:
-                return Mul((self, other))
+                terms = [self, other]
+                terms.sort(key=lambda x : x.name)
+                return Mul(tuple(terms))
 
-        elif isinstance(other, float) or isinstance(other, int):
+        if isinstance(other, float) or isinstance(other, int):
             if other:
                 return Mul((self,), coefficient=other)
             else:
                 return 0
 
         elif isinstance(other, Mul):
-            results = []
+            res = self
             for term in other.terms:
-                res = self*term
-                results.append(res)
-            return Mul(terms=tuple(results), coefficient=other.coefficient)
+                res = res*term
+            return Mul(terms=res.terms, coefficient=other.coefficient)
 
         elif isinstance(other, Add):
             results = []
@@ -59,6 +60,9 @@ class Variable():
                 res = self*term
                 results.append(res)
             return Add(terms=tuple(results))
+
+    def __rmul__(self, other):
+        return self*other
 
     def __add__(self, other):
         """Addition method for variables."""
@@ -159,6 +163,7 @@ class Mul():
             if not inside:
                 terms.append(other)
             res = deepcopy(self)
+            terms.sort(key=lambda x : x.name)
             res.terms = tuple(terms)
             return res
 
@@ -172,12 +177,12 @@ class Mul():
 
         elif isinstance(other, Mul):
             coeff = self.coefficient*other.coefficient
-            terms = []
-            for term_outer in self.terms:
-                for term_inner in other.terms:
-                    terms.append(term_outer*term_inner)
+            terms = self.terms+other.terms
+            base = terms[0]
+            for term in terms[1:]:
+                base = base*term
             if coeff:
-                return Mul(tuple(terms), coefficient=coeff)
+                return Mul(base.terms, coefficient=coeff)
             else:
                 0
 
@@ -186,6 +191,9 @@ class Mul():
             for term in other.terms:
                 addition_terms.append(self*term)
             return Add(tuple(addition_terms))
+
+    def __rmul__(self, other):
+        return self*other
 
     def __add__(self, other):
         if isinstance(other, Variable):
@@ -272,3 +280,6 @@ class Add():
                 return 0
         else:
             return Add(tuple([other*term for term in self.terms]))
+
+    def __rmul__(self, other):
+        return self*other
