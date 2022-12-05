@@ -9,8 +9,13 @@ class Add():
     def __repr__(self):
         display = ''
         for term in self.terms:
-            display += f'{term.__repr__()}+'
-        return display[:-1]
+            if term.__repr__()[0]=='-':
+                pass
+            else:
+                if display:
+                    display += '+'
+            display += f'{term.__repr__()}'
+        return display
 
     def __add__(self, other):
         if isinstance(other, Add):
@@ -26,6 +31,25 @@ class Add():
                 return Add(tuple(addition_terms))
             else:
                 return Add(self.terms+(other,))
+
+    def __rsub__(self, other):
+        if isinstance(other, int) or isinstance(other, float):
+            return self-other
+
+    def __sub__(self, other):
+        if isinstance(other, Add):
+            res = deepcopy(self)
+            for term in other.terms:
+                res = res-term
+            return res
+        else:
+            if other in self.terms:
+                addition_terms = [term if term !=
+                                  other else term-other for term in self.terms]
+                return Add(tuple(addition_terms))
+            else:
+                term = 0-other
+                return Add(self.terms+(term,))
 
     def __mul__(self, other):
         if isinstance(other, Add):

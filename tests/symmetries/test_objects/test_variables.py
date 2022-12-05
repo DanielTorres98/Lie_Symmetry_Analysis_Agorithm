@@ -88,7 +88,7 @@ def test_x_times_x_plus_1():
 
 
 def test_x_minus_8():
-    assert (x-8).__str__() == 'x+-8'
+    assert (x-8).__str__() == 'x-8'
 
 
 def test_x_minus_8x():

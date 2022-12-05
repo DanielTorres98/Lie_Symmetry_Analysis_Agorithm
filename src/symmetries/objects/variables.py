@@ -95,7 +95,16 @@ class Variable():
             return self+result
 
         elif isinstance(other, Add):
-            raise
+            res = deepcopy(self)
+            for term in other.terms:
+                res = res-term
+            return res
+
+    def __rsub__(self, other):
+        return -1*self+other
+
+    def __radd__(self, other):
+        return self+other
 
     def __add__(self, other):
         """Addition method for variables."""

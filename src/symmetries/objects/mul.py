@@ -39,15 +39,15 @@ class Mul():
                 return 0
 
         elif isinstance(other, Mul):
-            coeff = self.coefficient*other.coefficient
+            coefficient = self.coefficient*other.coefficient
             terms = self.terms+other.terms
             base = terms[0]
             for term in terms[1:]:
                 base = base*term
             if isinstance(base, Mul):
-                return Mul(base.terms, coefficient=coeff)
+                return Mul(base.terms, coefficient)
             else:
-                return Mul((base,), coefficient=coeff)
+                return Mul((base,), coefficient)
 
         elif isinstance(other, Add):
             addition_terms = []
@@ -73,6 +73,9 @@ class Mul():
 
     def __rmul__(self, other):
         return self*other
+
+    def __radd__(self, other):
+        return self+other
 
     def __add__(self, other):
         if isinstance(other, float) or isinstance(other, int):
@@ -114,3 +117,26 @@ class Mul():
                 return Mul(self.terms, coeff)
             else:
                 return Add((self, other))
+
+    def __rsub__(self, other):
+        result = deepcopy(self)
+        result.coefficient *= -1
+        return other+result
+
+    def __sub__(self, other):
+        if isinstance(other, float) or isinstance(other, int):
+            return self+(-other)
+
+        elif isinstance(other, Mul):
+            result = deepcopy(other)
+            result.coefficient *= -1
+            return self+result
+
+        elif isinstance(other, Add):
+            res = deepcopy(self)
+            for term in other.terms:
+                res = res-term
+            return res
+
+        else: # Variable
+            return self+Mul((other,), -1)

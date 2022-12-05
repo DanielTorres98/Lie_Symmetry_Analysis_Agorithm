@@ -94,7 +94,7 @@ def test_y_times_x_minus_same():
 
 
 def test_y_times_x_minus_x():
-    assert ((y*x)+(-1*x)).__str__() == 'x*y+-x'
+    assert ((y*x)+(-1*x)).__str__() == 'x*y-x'
 
 
 def test_y_times_x_plus_3_x_p():
