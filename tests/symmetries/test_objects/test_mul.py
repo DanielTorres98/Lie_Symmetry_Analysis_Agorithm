@@ -51,6 +51,22 @@ def test_y_times_x_plus_x_plus_1():
     assert ((y*x)+(x+1)).__str__() == 'x+1+x*y'
 
 
+def test_y_times_x_plus_3p():
+    assert ((y*x)+(3*p_of_x)).__str__() == 'x*y+3p(x)'
+
+
+def test_2x_plus_x():
+    assert ((2*x)+x).__str__() == '3x'
+
+
+def test_2x_plus_y():
+    assert ((2*x)+y).__str__() == '2x+y'
+
+
+def test_2x_times_3x():
+    assert ((2*x)*(3*x)).__str__() == '6x^2'
+
+
 def test_y_times_x_times_x():
     assert ((y*x)*x).__str__() == 'x^2*y'
 
@@ -76,5 +92,14 @@ def test_y_times_x_minus_same():
     assert ((y*x)+(-1*y*x)).__str__() == '0'
     assert ((y*x)+(-1*y*x)) == 0
 
+
 def test_y_times_x_minus_x():
     assert ((y*x)+(-1*x)).__str__() == 'x*y+-x'
+
+
+def test_y_times_x_plus_3_x_p():
+    assert ((y*x)+(x+3+p_of_x+(y*x))).__str__() == 'x+3+p(x)+2x*y'
+
+
+def test_3x_plus_3_x_p():
+    assert ((3*x)+(x+3+p_of_x+(y*x))).__str__() == '4x+3+p(x)+x*y'
