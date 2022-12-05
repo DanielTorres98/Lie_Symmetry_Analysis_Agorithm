@@ -122,7 +122,7 @@ class Variable():
                 return Add((self, other))
 
         elif isinstance(other, Add):
-            return Add(terms=other.terms+(self,))
+            return other+self
 
 
 class Power(Variable):
