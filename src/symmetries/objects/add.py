@@ -33,7 +33,7 @@ class Add():
                 return Add(self.terms+(other,))
 
     def __rsub__(self, other):
-        if isinstance(other, int) or isinstance(other, float):
+        if isinstance(other, (int, float)):
             return self-other
 
     def __sub__(self, other):
@@ -63,7 +63,7 @@ class Add():
                 base = base+expansion
             return base
 
-        elif isinstance(other, float) or isinstance(other, int):
+        elif isinstance(other, (int, float)):
             if other:
                 return Add(tuple([term*other for term in self.terms]))
             else:

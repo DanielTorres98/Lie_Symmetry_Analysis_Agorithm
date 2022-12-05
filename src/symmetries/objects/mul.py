@@ -30,7 +30,7 @@ class Mul():
 
     def __mul__(self, other):
         """Multiplication method for variables."""
-        if isinstance(other, float) or isinstance(other, int):
+        if isinstance(other, (int, float)):
             if other:
                 res = deepcopy(self)
                 res.coefficient *= other
@@ -78,7 +78,7 @@ class Mul():
         return self+other
 
     def __add__(self, other):
-        if isinstance(other, float) or isinstance(other, int):
+        if isinstance(other, (int, float)):
             if other:
                 return Add((self, other))
             else:
@@ -124,7 +124,7 @@ class Mul():
         return other+result
 
     def __sub__(self, other):
-        if isinstance(other, float) or isinstance(other, int):
+        if isinstance(other, (int, float)):
             return self+(-other)
 
         elif isinstance(other, Mul):

@@ -47,7 +47,7 @@ class Variable():
                 terms.sort(key=lambda x: x.name)
                 return Mul(tuple(terms))
 
-        if isinstance(other, float) or isinstance(other, int):
+        if isinstance(other, (int, float)):
             if other:
                 return Mul((self,), coefficient=other)
             else:
@@ -86,7 +86,7 @@ class Variable():
         if isinstance(other, Variable):
             return self+Mul((other,), -1)
 
-        elif isinstance(other, float) or isinstance(other, int):
+        elif isinstance(other, (int, float)):
             return self+(-other)
 
         elif isinstance(other, Mul):
@@ -114,7 +114,7 @@ class Variable():
             else:
                 return Add((self, other))
 
-        elif isinstance(other, float) or isinstance(other, int):
+        elif isinstance(other, (int, float)):
             if other:
                 return Add((self, other))
             else:
