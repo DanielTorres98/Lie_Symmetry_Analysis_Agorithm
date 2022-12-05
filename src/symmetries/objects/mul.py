@@ -44,13 +44,10 @@ class Mul():
             base = terms[0]
             for term in terms[1:]:
                 base = base*term
-            if coeff:
-                if isinstance(base, Mul):
-                    return Mul(base.terms, coefficient=coeff)
-                else:
-                    return Mul((base,), coefficient=coeff)
+            if isinstance(base, Mul):
+                return Mul(base.terms, coefficient=coeff)
             else:
-                return 0
+                return Mul((base,), coefficient=coeff)
 
         elif isinstance(other, Add):
             addition_terms = []
@@ -69,7 +66,9 @@ class Mul():
                         terms.append(term)
                 return Mul(tuple(terms), self.coefficient)
             else:
-                result.terms += (other,)
+                terms = list(result.terms)+[other]
+                terms.sort(key=lambda x: x.name)
+                result.terms = tuple(terms)
                 return result
 
     def __rmul__(self, other):

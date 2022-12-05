@@ -58,9 +58,12 @@ class Variable():
             for term in other.terms:
                 res = res*term
 
-            terms = list(res.terms)
-            terms.sort(key=lambda x: x.name)
-            return Mul(terms=tuple(terms), coefficient=other.coefficient)
+            if isinstance(res, Variable):
+                return Mul(terms=(res,), coefficient=other.coefficient)
+            else:
+                terms = list(res.terms)
+                terms.sort(key=lambda x: x.name)
+                return Mul(terms=tuple(terms), coefficient=other.coefficient)
 
         elif isinstance(other, Add):
             results = []

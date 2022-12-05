@@ -6,6 +6,7 @@ from symmetries.objects.mul import Mul
 x = Variable('x')
 y = Variable('y')
 p_of_x = Function('p', dependencies=(x,))
+x_squared = x**2
 
 def test_variable_x():
     assert x.__str__()=='x'
@@ -32,16 +33,14 @@ def test_x_times_0():
     assert (x*0).__str__()=='0'
     assert x*0==0
 
-def test_x_times_x():
-    assert (x*x).__str__()=='x^2'
-    assert isinstance(x*x, Power)
-
 def test_x_times_y():
     assert (x*y).__str__()=='x*y'
 
-def test_x_second_power():
+def test_x_times_x():
+    assert (x*x).__str__()=='x^2'
     assert (x**2).__str__()=='x^2'
     assert x**2==x*x
+    assert isinstance(x*x, Power)
 
 def test_x_third_power():
     assert (x**3).__str__()=='x^3'
@@ -61,14 +60,11 @@ def test_p_times_x():
     assert isinstance(p_of_x*x, Mul)
 
 def test_x_times_x_second_power():
-    x_squared = x**2
     assert (x_squared**2).__str__()=='x^4'
-    del x_squared
 
 def test_x_powers():
-    x_squared = x**2
     x_to_the_third_power = x**3
     assert (x_squared*x_to_the_third_power).__str__()=='x^5'
     assert (x_to_the_third_power**2).__str__()=='x^6'
 
-    del x_squared, x_to_the_third_power
+    del x_to_the_third_power
