@@ -43,8 +43,18 @@ def test_x_2_times_0():
     assert ((x+2)*0).__str__() == '0'
     assert ((x+2)*0) == 0
 
+
 def test_1_minus_add():
-    assert (1-(y+y*x+2)).__str__() == '-y-x*y-2+1'
+    assert (1-(y+y*x+2)).__str__() == '-y-x*y-1'
+
+
+def test_1_plus_add():
+    assert (1+(y+y*x+2)).__str__() == 'y+x*y+3'
+
 
 def test_add_minus_add():
     assert ((x*9-y*7)-(y+y*x+2)).__str__() == '9x-8y-x*y-2'
+
+
+def test_add_plus_add():
+    assert ((8*x+y-9)+(y-x+4)).__str__() == '7x+2y-5'

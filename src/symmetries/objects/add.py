@@ -1,5 +1,6 @@
 from copy import deepcopy
 
+
 class Add():
     """Class for addition of multiple terms."""
 
@@ -9,13 +10,16 @@ class Add():
     def __repr__(self):
         display = ''
         for term in self.terms:
-            if term.__repr__()[0]=='-':
+            if term.__repr__()[0] == '-':
                 pass
             else:
                 if display:
                     display += '+'
             display += f'{term.__repr__()}'
         return display
+
+    def __radd__(self, other):
+        return self+other
 
     def __add__(self, other):
         if isinstance(other, Add):
@@ -25,12 +29,19 @@ class Add():
             return res
 
         else:
-            if other in self.terms:
+            if isinstance(other, (int, float)):
+                if any(isinstance(term, (int, float)) for term in self.terms):
+                    addition_terms = [
+                        term + other if isinstance(term, (int, float)
+                                                ) else term for term in self.terms]
+                    return Add(tuple(addition_terms))
+
+            elif other in self.terms:
                 addition_terms = [term if term !=
                                   other else term+other for term in self.terms]
                 return Add(tuple(addition_terms))
-            else:
-                return Add(self.terms+(other,))
+            
+            return Add(self.terms+(other,))
 
     def __rsub__(self, other):
         if isinstance(other, (int, float)):
