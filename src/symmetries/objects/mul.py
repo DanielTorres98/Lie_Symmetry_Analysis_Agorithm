@@ -87,7 +87,7 @@ class Mul():
         elif isinstance(other, Mul):
             if other == self:
                 res = deepcopy(self)
-                res.coefficient += other.coefficient
+                res.coefficient = self.coefficient + other.coefficient
                 if res.coefficient:
                     return res
                 else:
@@ -140,3 +140,14 @@ class Mul():
 
         else: # Variable
             return self+Mul((other,), -1)
+
+    def __pow__(self, other):
+        result = deepcopy(self)
+        result.coefficient = result.coefficient ** other
+
+        terms = []
+        for term in result.terms:
+            terms.append(term**other)
+
+        result.terms = tuple(terms)
+        return result
