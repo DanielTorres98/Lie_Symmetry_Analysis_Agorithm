@@ -37,30 +37,24 @@ class Add():
                     return Add(tuple(addition_terms))
 
             elif other in self.terms:
-                addition_terms = [term if term !=
-                                  other else term+other for term in self.terms]
+                addition_terms  = []
+                for term in self.terms:
+                    if term != other:
+                        addition_terms.append(term)
+                    else:
+                        res = term+other
+                        if res:
+                            addition_terms.append(res)
+
                 return Add(tuple(addition_terms))
             
             return Add(self.terms+(other,))
 
     def __rsub__(self, other):
-        if isinstance(other, (int, float)):
-            return -1*self+other
+        return -1*self+other
 
     def __sub__(self, other):
-        if isinstance(other, Add):
-            res = deepcopy(self)
-            for term in other.terms:
-                res = res-term
-            return res
-        else:
-            if other in self.terms:
-                addition_terms = [term if term !=
-                                  other else term-other for term in self.terms]
-                return Add(tuple(addition_terms))
-            else:
-                term = 0-other
-                return Add(self.terms+(term,))
+        return self+(-1*other)
 
     def __mul__(self, other):
         if isinstance(other, Add):
