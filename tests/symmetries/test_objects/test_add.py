@@ -59,5 +59,10 @@ def test_add_minus_add():
 def test_add_plus_add():
     assert ((8*x+y-9)+(y-x+4)).__str__() == '7x+2y-5'
 
+
 def test_add_remove_var_equals_0():
     assert ((8*x+y-9)-(y-x+4)).__str__() == '9x-13'
+
+
+def test_add_power_5():
+    assert ((1-x)**5).__str__() == '-x^5+5x^4-10x^3+10x^2-5x+1'

@@ -79,3 +79,12 @@ class Add():
 
     def __rmul__(self, other):
         return self*other
+
+    def __pow__(self, other):
+        assert isinstance(other, int)
+        self_copy = deepcopy(self)
+
+        for _ in range(other-1):
+            self_copy = self_copy * self
+
+        return self_copy
