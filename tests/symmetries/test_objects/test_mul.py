@@ -114,4 +114,4 @@ def test_mul_minus_int():
 
 
 def test_mul_minus_add():
-    assert (x*9-(y+y*x+2-x)).__str__() == '10x-y-x*y-2'
+    assert (x*9-(y+y*x+2-x)).__str__() == '-y-x*y-2+10x'

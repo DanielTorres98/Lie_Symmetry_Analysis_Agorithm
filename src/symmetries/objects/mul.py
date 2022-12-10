@@ -124,22 +124,7 @@ class Mul():
         return other+result
 
     def __sub__(self, other):
-        if isinstance(other, (int, float)):
-            return self+(-other)
-
-        elif isinstance(other, Mul):
-            result = deepcopy(other)
-            result.coefficient *= -1
-            return self+result
-
-        elif isinstance(other, Add):
-            res = deepcopy(self)
-            for term in other.terms:
-                res = res-term
-            return res
-
-        else: # Variable
-            return self+Mul((other,), -1)
+        return self+(-1*other)
 
     def __pow__(self, other):
         result = deepcopy(self)

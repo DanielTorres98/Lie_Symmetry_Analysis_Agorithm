@@ -58,3 +58,6 @@ def test_add_minus_add():
 
 def test_add_plus_add():
     assert ((8*x+y-9)+(y-x+4)).__str__() == '7x+2y-5'
+
+def test_add_remove_var_equals_0():
+    assert ((8*x+y-9)-(y-x+4)).__str__() == '9x-13'
