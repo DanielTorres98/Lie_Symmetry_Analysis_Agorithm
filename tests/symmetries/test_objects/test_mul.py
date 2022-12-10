@@ -103,3 +103,12 @@ def test_y_times_x_plus_3_x_p():
 
 def test_3x_plus_3_x_p():
     assert ((3*x)+(x+3+p_of_x+(y*x))).__str__() == '4x+3+p(x)+x*y'
+
+def test_power():
+    assert ((8*x*y)**3).__str__() == '512x^3*y^3'
+
+def test_mul_minus_int():
+    assert ( 8*x-9).__str__() == '8x-9'
+
+def test_mul_minus_add():
+    assert (x*9-(y+y*x+2-x)).__str__() == '10x-y-x*y-2'

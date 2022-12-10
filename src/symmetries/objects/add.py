@@ -34,7 +34,7 @@ class Add():
 
     def __rsub__(self, other):
         if isinstance(other, (int, float)):
-            return self-other
+            return -1*self+other
 
     def __sub__(self, other):
         if isinstance(other, Add):
