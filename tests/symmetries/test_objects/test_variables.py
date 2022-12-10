@@ -102,11 +102,14 @@ def test_x_add_8_plus_x():
 def test_function_w_derivatives():
     assert p_of_x_dx.__str__() == 'p(x)_x'
 
+
 def test_1_minus_x():
     assert (1-x).__str__() == '-x+1'
+
 
 def test_1_plus_x():
     assert (1+x).__str__() == 'x+1'
 
+
 def test_minus_add():
-    assert (x-(y+y*x+2)).__str__() == 'x-y-x*y-2'
+    assert (x-(y+y*x+2)).__str__() == '-y-x*y-2+x'

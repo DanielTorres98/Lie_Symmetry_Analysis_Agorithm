@@ -83,22 +83,7 @@ class Variable():
             return Power(self, other)
 
     def __sub__(self, other):
-        if isinstance(other, Variable):
-            return self+Mul((other,), -1)
-
-        elif isinstance(other, (int, float)):
-            return self+(-other)
-
-        elif isinstance(other, Mul):
-            result = deepcopy(other)
-            result.coefficient *= -1
-            return self+result
-
-        elif isinstance(other, Add):
-            res = deepcopy(self)
-            for term in other.terms:
-                res = res-term
-            return res
+        return self+(-1*other)
 
     def __rsub__(self, other):
         return -1*self+other
