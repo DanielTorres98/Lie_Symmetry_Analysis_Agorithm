@@ -1,11 +1,12 @@
 from copy import deepcopy
 from .add import Add
+from .div import Div
 
 
 class Mul():
     """Class for multiplication of multiple terms."""
 
-    def __init__(self, terms: tuple = (), coefficient: float = 1) -> None:
+    def __init__(self, terms: tuple, coefficient: float = 1) -> None:
         self.coefficient = coefficient
         # Tuple[Union[Add, Mul, Variable, DependentVariable]]
         self.terms = terms
@@ -21,7 +22,7 @@ class Mul():
                 return False
 
     def __repr__(self):
-        display = f'{self.coefficient}' if self.coefficient != 1 else ''
+        display = f'{round(self.coefficient,4)}' if self.coefficient != 1 else ''
         if display == '-1':
             display = '-'
         for term in self.terms:
@@ -127,12 +128,22 @@ class Mul():
         return self+(-1*other)
 
     def __pow__(self, other):
-        result = deepcopy(self)
-        result.coefficient = result.coefficient ** other
+        assert isinstance(other, int), 'No partial power.'
 
-        terms = []
-        for term in result.terms:
-            terms.append(term**other)
+        if other==0:
+            return 1
 
-        result.terms = tuple(terms)
-        return result
+        elif other>0:
+            result = deepcopy(self)
+            result.coefficient = result.coefficient ** other
+            terms = []
+            for term in result.terms:
+                terms.append(term**other)
+
+            result.terms = tuple(terms)
+            return result
+
+        else: # power<0
+            power_mag = abs(other)
+            result = self**power_mag
+            return Div(1, result)
