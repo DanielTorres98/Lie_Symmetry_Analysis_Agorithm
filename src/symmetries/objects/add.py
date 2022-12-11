@@ -31,9 +31,13 @@ class Add():
         else:
             if isinstance(other, (int, float)):
                 if any(isinstance(term, (int, float)) for term in self.terms):
-                    addition_terms = [
-                        term + other if isinstance(term, (int, float)
-                                                ) else term for term in self.terms]
+                    addition_terms = []
+                    for term in self.terms:
+                        if isinstance(term, (int, float)):
+                            sum = term + other
+                            if sum: addition_terms.append(sum)
+                        else:
+                            addition_terms.append(term)
                     return Add(tuple(addition_terms))
 
             elif other in self.terms:

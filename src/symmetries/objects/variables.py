@@ -74,6 +74,13 @@ class Variable():
             return Add(terms=tuple(results))
 
         elif isinstance(other, Div):
+            if isinstance(other.denominator, Mul):
+                if self in other.denominator.terms:
+                    other_copy = deepcopy(other)
+                    terms = tuple([x for x in other.denominator.terms if x != self])
+                    other_copy.denominator.terms = terms
+                    return other_copy
+
             copy_other = deepcopy(other)
             copy_other.numerator = copy_other.numerator*self
             return copy_other
@@ -125,8 +132,16 @@ class Variable():
             return other+self
 
     def __truediv__(self, other):
-        if (isinstance(other, Mul) and other == self):
-            return 1/other.coefficient
+        if (isinstance(other, Mul) and self in other.terms):
+            if len(other.terms)==1:
+                return 1/other.coefficient
+            else:
+                terms = list(other.terms)
+                terms.remove(self)
+                if len(terms)==1:
+                    return Div(1, terms[0])
+                else:
+                    return Div(1, Mul(tuple(terms)))
 
         elif isinstance(other, Power) and other.name == self.name:
             copy_other = deepcopy(other)

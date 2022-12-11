@@ -56,6 +56,21 @@ class Mul():
                 addition_terms.append(self*term)
             return Add(tuple(addition_terms))
 
+        elif isinstance(other, Div):
+            if isinstance(other.denominator, Mul):
+                if self in other.denominator.terms:
+                    other_copy = deepcopy(other)
+                    other.denominator.terms.remove(self)
+
+                    other_copy.denominator.terms = tuple(other.denominator.terms)
+                    other_copy.numerator *= other.denominator.coefficient
+                    return other_copy
+            else:
+                other_copy = deepcopy(other)
+                other_copy.numerator = other_copy.numerator * self
+                return other_copy
+
+
         else: # variable
             result = deepcopy(self)
             if other in result.terms:
@@ -147,3 +162,7 @@ class Mul():
             power_mag = abs(other)
             result = self**power_mag
             return Div(1, result)
+
+    def __rtruediv__(self, other):
+        if isinstance(other, (int, float)):
+            return Div(other, self)  # TODO: change this
