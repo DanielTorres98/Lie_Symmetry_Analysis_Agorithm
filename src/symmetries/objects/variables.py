@@ -1,6 +1,7 @@
 from symmetries.utils.constants import greek_alphabet
 from .add import Add
 from .mul import Mul
+from .div import Div
 from copy import deepcopy
 
 
@@ -47,7 +48,7 @@ class Variable():
                 terms.sort(key=lambda x: x.name)
                 return Mul(tuple(terms))
 
-        if isinstance(other, (int, float)):
+        elif isinstance(other, (int, float)):
             if other:
                 return Mul((self,), coefficient=other)
             else:
@@ -71,6 +72,11 @@ class Variable():
                 res = self*term
                 results.append(res)
             return Add(terms=tuple(results))
+
+        elif isinstance(other, Div):
+            copy_other = deepcopy(other)
+            copy_other.numerator = copy_other.numerator*self
+            return copy_other
 
     def __rmul__(self, other):
         return self*other
@@ -118,6 +124,25 @@ class Variable():
         elif isinstance(other, Add):
             return other+self
 
+    def __truediv__(self, other):
+        if (isinstance(other, Mul) and other == self):
+            return other.coefficient
+
+        elif isinstance(other, Power) and other.name == self.name:
+            copy_other = deepcopy(other)
+            copy_other.power *= -1
+            return self*copy_other
+
+        elif isinstance(other, Variable) and other.name == self.name:
+            return 1
+
+        else:
+            return Div(self, other)
+
+    def __rtruediv__(self, other):
+        if isinstance(other, (int, float)):
+            return Div(other, self)  # TODO: change this
+
 
 class Power(Variable):
 
@@ -136,10 +161,15 @@ class Power(Variable):
             return False
 
     def __repr__(self):
-        display = self.term.__repr__()
-        if self.power and self.power != 1:
+        if self.power > 0:
+            display = self.term.__repr__()
             display += f'^{self.power}'
-        return display
+            return display
+        else:
+            self_copy = deepcopy(self)
+            self_copy.power *= -1
+            display = Div(1, self_copy).__repr__()
+            return display
 
 
 class Function(Variable):
