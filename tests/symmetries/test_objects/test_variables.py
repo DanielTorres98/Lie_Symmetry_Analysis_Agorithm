@@ -113,3 +113,47 @@ def test_1_plus_x():
 
 def test_minus_add():
     assert (x-(y+y*x+2)).__str__() == '-y-x*y-2+x'
+
+
+def test_y_over_2():
+    assert (y/2).__str__() == 'y/2'
+
+
+def test_1_over_x():
+    assert (2/x).__str__() == '2/x'
+
+
+def test_x_over_x():
+    assert (x/x).__str__() == '1'
+
+
+def test_y_over_x():
+    assert (y/x).__str__() == 'y/x'
+
+
+def test_y_over_2x():
+    assert (y/(2*x)).__str__() == 'y/(2x)'
+
+
+def test_x_over_2x():
+    assert (x/(2*x)).__str__() == '0.5'
+
+
+def test_y_over_2_plus_x():
+    assert (y/(2+x)).__str__() == 'y/(x+2)'
+
+
+def test_y_over_x_squared():
+    assert (y/x**2).__str__() == 'y/x^2'
+
+
+def test_x_over_x_squared():
+    assert (x/x**2).__str__() == '1/x'
+
+
+def test_x_times_y_over_2():
+    assert (x*(y/2)).__str__() == 'x*y/2'
+
+
+def test_x_times_x_over_2():
+    assert (x*(x/2)).__str__() == 'x^2/2'

@@ -1,6 +1,5 @@
 from symmetries.objects.variables import Variable, Function, Power
 from symmetries.objects.add import Add
-from symmetries.objects.mul import Mul
 
 x = Variable('x')
 y = Variable('y')

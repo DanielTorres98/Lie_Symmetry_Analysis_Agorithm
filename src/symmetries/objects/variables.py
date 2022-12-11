@@ -126,7 +126,7 @@ class Variable():
 
     def __truediv__(self, other):
         if (isinstance(other, Mul) and other == self):
-            return other.coefficient
+            return 1/other.coefficient
 
         elif isinstance(other, Power) and other.name == self.name:
             copy_other = deepcopy(other)
@@ -161,10 +161,12 @@ class Power(Variable):
             return False
 
     def __repr__(self):
-        if self.power > 0:
+        if self.power > 1:
             display = self.term.__repr__()
             display += f'^{self.power}'
             return display
+        elif self.power == 1:
+            return self.term.__repr__()
         else:
             self_copy = deepcopy(self)
             self_copy.power *= -1
