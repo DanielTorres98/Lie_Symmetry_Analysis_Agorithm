@@ -157,3 +157,9 @@ def test_x_times_y_over_2():
 
 def test_x_times_x_over_2():
     assert (x*(x/2)).__str__() == 'x^2/2'
+
+def test_x_times_div_with_x():
+    assert (x*(6/(3*x))).__str__() == '2.0'
+
+def test_x_times_div_with_x_and_y():
+    assert (x*(6/(3*x*y))).__str__() == '6/(3y)'

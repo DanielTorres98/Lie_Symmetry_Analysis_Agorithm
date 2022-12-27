@@ -78,8 +78,11 @@ class Variable():
                 if self in other.denominator.terms:
                     other_copy = deepcopy(other)
                     terms = tuple([x for x in other.denominator.terms if x != self])
-                    other_copy.denominator.terms = terms
-                    return other_copy
+                    if terms:
+                        other_copy.denominator.terms = terms
+                        return other_copy
+                    else:
+                        return other.numerator/other.denominator.coefficient
 
             copy_other = deepcopy(other)
             copy_other.numerator = copy_other.numerator*self
@@ -139,9 +142,12 @@ class Variable():
                 terms = list(other.terms)
                 terms.remove(self)
                 if len(terms)==1:
-                    return Div(1, terms[0])
+                    if other.coefficient==1:
+                        return Div(1, terms[0])
+                    else:
+                        return Div(1, Mul((terms[0],), other.coefficient))
                 else:
-                    return Div(1, Mul(tuple(terms)))
+                    return Div(1, Mul(tuple(terms), other.coefficient))
 
         elif isinstance(other, Power) and other.name == self.name:
             copy_other = deepcopy(other)
