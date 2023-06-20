@@ -1,20 +1,21 @@
 """This file has the structure of the class system. Which has all the information of the physical
 system to be analyzed. E.g. the differential equation, rules array, independent and dependent
-variables, etc. 
+variables, etc.
 """
 
 from copy import deepcopy
 import sympy
 from symmetries.utils.combinatorics import list_combinatorics
 from .system_of_equations import SystemOfEquations
+from typing import Union
 
 
-class System(SystemOfEquations):
+class Model(SystemOfEquations):
     """System of equations base class."""
 
     def __init__(self,
-                 differential_equation,
-                 order: int,
+                 differential_equation: Union[sympy.core.add.Add, list],
+                 order: Union[int, list],
                  independent_variables: list,
                  dependent_variables: list,
                  constants: list,
@@ -29,7 +30,7 @@ class System(SystemOfEquations):
             constants (list): Constants of motion of the system.
         """
         self.differential_equation = differential_equation
-        self.order = order
+        self.order = max(order) if isinstance(order, list) else order
 
         self.infinitesimals: list = []
         self.infinitesimals_dep: list = []
@@ -149,15 +150,31 @@ class System(SystemOfEquations):
 
         self.derivatives_subscript_notation = derivatives_relabel
 
-        new_labeling = deepcopy(derivatives_relabel)
-        previous_labeling = deepcopy(
-            self.dependent_variables_partial_derivatives)
+        self.differential_equation = self.relabel_differential_eq(
+            self.differential_equation)
 
-        new_labeling.reverse()
-        previous_labeling.reverse()
+    def relabel_differential_eq(self, dif_eq: Union[sympy.core.add.Add, list]
+                                ) -> Union[sympy.core.add.Add, list]:
 
-        for new, old in zip(new_labeling, previous_labeling):
-            self.differential_equation = self.differential_equation.xreplace({old: new})
-        for var in self.dependent_variables:
-            var_sym = sympy.symbols(str(var).split("(")[0])
-            self.differential_equation = self.differential_equation.xreplace({var: var_sym})
+        if isinstance(dif_eq, list):
+            dif_eq_relabelled = []
+            for equation in dif_eq:
+                dif_eq_relabelled.append(
+                    self.relabel_differential_eq(equation))
+            return dif_eq_relabelled
+
+        else:
+            assert isinstance(dif_eq, sympy.core.add.Add)
+            new_labeling = deepcopy(self.derivatives_subscript_notation)
+            previous_labeling = deepcopy(
+                self.dependent_variables_partial_derivatives)
+
+            new_labeling.reverse()
+            previous_labeling.reverse()
+
+            for new, old in zip(new_labeling, previous_labeling):
+                dif_eq = dif_eq.xreplace({old: new})
+            for var in self.dependent_variables:
+                var_sym = sympy.symbols(str(var).split("(")[0])
+                dif_eq = dif_eq.xreplace({var: var_sym})
+            return dif_eq
