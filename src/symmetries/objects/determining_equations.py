@@ -424,7 +424,7 @@ class DeterminingEquations(SystemOfEquations):
             # If the string length of the variable is bigger than one assumes it is a greek letter.
             #
             var = str(variable)
-            if len(str(var)) > 1:
+            if len(var) > 1:
                 latex_dict[f'xi{var}'] = f'xi^{"{"}{backslash_char}{var}{"}"}'
             else:
                 latex_dict[f'xi{var}'] = f'xi^{"{"}{var}{"}"}'
@@ -434,7 +434,7 @@ class DeterminingEquations(SystemOfEquations):
             # If the string length of the variable is bigger than one assumes it is a greek letter.
             #
             var = str(variable).split("(")[0]
-            if len(str(var)) > 1:
+            if len(var) > 1:
                 latex_dict[f'eta{var}'] = f'eta^{"{"}{backslash_char}{var}{"}"}'
             else:
                 latex_dict[f'eta{var}'] = f'eta^{"{"}{var}{"}"}'
@@ -447,7 +447,7 @@ class DeterminingEquations(SystemOfEquations):
             latex_dict,
             var_list,
             constants,
-        ).latex_det_eqn()
+        ).format_determining_equations()
         
         latex_code = latex_code.replace("+-", "-")
         print(latex_code)

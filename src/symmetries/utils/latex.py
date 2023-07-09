@@ -2,28 +2,32 @@
 
 
 class Latex():
+    """Latex class"""
 
     def __init__(self, determining_equations, var_dict: dict, variables: list, constants: list):
-        """_summary_
+        """Constructor
 
         Parameters
         ----------
-        determining_equations : _type_
+        determining_equations : dict
             _description_
         var_dict : dict
             dictionary translating the variable name to latex format
         variables : list
-            list with all variables (independent and dependant) with the constants
-            written in latex format
+            list with all variables (independent and dependant) written in latex format
         constants : list
-            list containing all constants
+            list containing all constants in string format
         """
         self.determining_equations = determining_equations
         self.var_dict = var_dict
         self.variables = variables
         self.constants = constants
 
-    def dict_to_latex(self, term: dict, symbolic_constants: list, one_term: bool):
+        diff = len(self.constants) - len(self.variables)
+        alpha_id = [f'alpha_{idx}' for idx in range(diff)]
+        self.symbolic_constants = self.variables + alpha_id
+
+    def format_equation_term(self, term: dict, one_term: bool):
         """Given a dictionary it returns the symbolic equivalent. It drops all constants
         if it is just one term.
 
@@ -31,8 +35,6 @@ class Latex():
         ----------
         term : dict
             dictionary containing the information of the term
-        symbolic_constants : list
-            [description]
         one_term : bool
             True if it is the only term in the equation
 
@@ -47,7 +49,8 @@ class Latex():
         if one_term:
             coeff = ''
         else:
-            for cte, n in zip(symbolic_constants, term['constants']):
+            coeff = str(term['coefficient'])
+            for cte, n in zip(self.symbolic_constants, term['constants']):
                 if len(str(cte)) > 1:
                     if n == 1:
                         a += "\\" + str(cte)
@@ -58,7 +61,6 @@ class Latex():
                         a += str(cte)
                     if n > 1:
                         a += str(cte) + '^' + str(n)
-            coeff = str(term['coefficient'])
         D = self.format_derivatives(derivatives, variable)
         return coeff + a + D
 
@@ -71,7 +73,7 @@ class Latex():
             list of integers containing the order of the derivative with respect to the
             variable
         variable : str
-            variable to be differentiate
+            variable to be differentiated
 
         Returns
         -------
@@ -106,14 +108,10 @@ class Latex():
         str
             single string with all the equations typed in latex format
         """
-        diff = len(self.constants) - len(self.variables)
-        alpha_id = [f'alpha_{idx}' for idx in range(diff)]
-        symbolic_constants = self.variables + alpha_id
-
         latex_equation = ''
         one_term = (len(equation) == 1)
         for term in equation:
-            latex_equation += self.dict_to_latex(term, symbolic_constants, one_term) + '+'
+            latex_equation += self.format_equation_term(term, one_term) + '+'
         return latex_equation[:-1] + '=0'
 
     def format_determining_equations(self):
@@ -126,5 +124,6 @@ class Latex():
         """
         latex_system_of_eqns = ''
         for equation in self.determining_equations.values():
-            latex_system_of_eqns += self.format_equation(equation) + "\\" + "\\" + "\n"
+            latex_system_of_eqns += self.format_equation(
+                equation) + "\\" + "\\" + "\n"
         return latex_system_of_eqns
