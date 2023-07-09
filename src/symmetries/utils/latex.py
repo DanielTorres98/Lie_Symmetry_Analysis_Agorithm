@@ -1,52 +1,53 @@
-"""Module containing functions for printing in Latex form"""
+"""Module containing functions for printing equations in Latex form"""
 
 
 class Latex():
 
-    def __init__(self, det_eqn, var_dict: dict, var_list: list, constants: list):
+    def __init__(self, determining_equations, var_dict: dict, variables: list, constants: list):
         """_summary_
 
         Parameters
         ----------
-        det_eqn : _type_
+        determining_equations : _type_
             _description_
-        var_dict : [dict]
+        var_dict : dict
             dictionary translating the variable name to latex format
-        var_list : [list]
-            list with all variables (independent and dependant)list with the constants written in latex format
-        constants : [list]
+        variables : list
+            list with all variables (independent and dependant) with the constants
+            written in latex format
+        constants : list
             list containing all constants
         """
-        self.det_eqn = det_eqn
+        self.determining_equations = determining_equations
         self.var_dict = var_dict
-        self.var_list = var_list
+        self.variables = variables
         self.constants = constants
 
-    def dict_to_latex(self, term: dict, sym_cte_list: list, one_term: bool):
-        """Given a dictionary it returns the symbolic equivalent. It drops all constants if it is  just one term.
+    def dict_to_latex(self, term: dict, symbolic_constants: list, one_term: bool):
+        """Given a dictionary it returns the symbolic equivalent. It drops all constants
+        if it is just one term.
 
         Parameters
         ----------
-        term : [dict]
+        term : dict
             dictionary containing the information of the term
-        sym_cte_list : [list]
+        symbolic_constants : list
             [description]
-        one_term : [boolean]
+        one_term : bool
             True if it is the only term in the equation
 
         Returns
         -------
-        [str]
+        str
             The latex code to write the term. 
         """
-        var = self.var_dict[term['variable']]
-        list_devs = term['derivatives']
-        cte_power = zip(sym_cte_list, term['constants'])
+        variable = self.var_dict[term['variable']]
+        derivatives = term['derivatives']
         a = ''
         if one_term:
             coeff = ''
         else:
-            for cte, n in cte_power:
+            for cte, n in zip(symbolic_constants, term['constants']):
                 if len(str(cte)) > 1:
                     if n == 1:
                         a += "\\" + str(cte)
@@ -58,74 +59,72 @@ class Latex():
                     if n > 1:
                         a += str(cte) + '^' + str(n)
             coeff = str(term['coefficient'])
-        D = self.latex_derivative(list_devs, var)
-        latex_term = coeff + a + D
-        return latex_term
+        D = self.format_derivatives(derivatives, variable)
+        return coeff + a + D
 
-    def latex_derivative(self, list_devs: list, var: str):
+    def format_derivatives(self, derivatives: list, variable: str):
         """Given a list of derivatives executes all the derivatives on the variable.
 
         Parameters
         ----------
-        list_devs : [list]
-            list of ints containing the order of the derivative with respect to the variable var_lists.
-        var : [str]
+        derivatives : list
+            list of integers containing the order of the derivative with respect to the
+            variable
+        variable : str
             variable to be differentiate
 
         Returns
         -------
-        [str]
+        str
             latex code for the derivative.
         """
-        D_v = zip(list_devs, self.var_list)
-        var_str = '\\' + var
-        for D, v in D_v:
+        var_str = '\\' + variable
+        for D, var in zip(derivatives, self.variables):
             for _ in range(D):
-                if len(str(v)) > 1:
+                if len(str(variable)) > 1:
                     if '_' in var_str:
-                        var_str = var_str + "\\" + v
+                        var_str += "\\" + var
                     else:
-                        var_str = var_str + '_' + '{' + "\\" + v
+                        var_str += '_' + '{' + "\\" + var
                 else:
                     if '_' in var_str:
-                        var_str = var_str + v
+                        var_str += var
                     else:
-                        var_str = var_str + '_' + '{' + v
+                        var_str += '_' + '{' + var
         return var_str + '}'
 
-    def latex_eqn_code(self, eqn: dict) -> str:
+    def format_equation(self, equation: dict) -> str:
         """This code generates the latex string format of the determinant equations
 
         Parameters
         ----------
-        eqn : [dictionary]
+        equation : dict
             dictionary containing all the determinant equations
 
         Returns
         -------
-        [string]
+        str
             single string with all the equations typed in latex format
         """
+        diff = len(self.constants) - len(self.variables)
+        alpha_id = [f'alpha_{idx}' for idx in range(diff)]
+        symbolic_constants = self.variables + alpha_id
 
-        sym_cte_list = [var for var in self.var_list]
-        for idx in range(len(self.constants) - len(self.var_list)):
-            sym_cte_list.append('alpha_' + str(idx))
+        latex_equation = ''
+        one_term = (len(equation) == 1)
+        for term in equation:
+            latex_equation += self.dict_to_latex(term, symbolic_constants, one_term) + '+'
+        return latex_equation[:-1] + '=0'
 
-        A = ''
-        for term in eqn:
-            one_term = (len(eqn) == 1)
-            A += self.dict_to_latex(term, sym_cte_list, one_term) + '+'
-        return A[:-1] + '=0'
-
-    def latex_det_eqn(self):
+    def format_determining_equations(self):
         """Gives the latex code version of remaining determining equation.
 
         Returns
         -------
-        [string]
+        str
             single string with all the equations typed in latex format
         """
-        latex_code = ''
-        for eqn in self.det_eqn.values():
-            latex_code += self.latex_eqn_code(eqn) + "\\" + "\\" + "\n"
-        return latex_code
+        latex_system_of_eqns = ''
+        for equation in self.determining_equations.values():
+            latex_system_of_eqns += self.format_equation(equation) + "\\" + "\\" + "\n"
+        return latex_system_of_eqns
