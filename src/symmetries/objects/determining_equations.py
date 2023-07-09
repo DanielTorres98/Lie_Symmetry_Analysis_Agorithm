@@ -4,7 +4,7 @@ from copy import deepcopy
 import sympy
 import numpy as np
 from symmetries.utils.algebra import key_ordering, str_to_dict, is_zero
-from symmetries.utils.latex import latex_det_eqn
+from symmetries.utils.latex import Latex
 from symmetries.utils.symbolic import sym_det_eqn, parse_variables
 from .system_of_equations import SystemOfEquations
 from .system import Model
@@ -442,12 +442,12 @@ class DeterminingEquations(SystemOfEquations):
 
         constants = [str(cte) for cte in self.constants]
 
-        latex_code = latex_det_eqn(
+        latex_code = Latex(
             self.determining_equations,
             latex_dict,
             var_list,
             constants,
-        )
+        ).latex_det_eqn()
         
         latex_code = latex_code.replace("+-", "-")
         print(latex_code)
