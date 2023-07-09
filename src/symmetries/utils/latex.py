@@ -97,21 +97,19 @@ def latex_eqn_code(eqn: dict, var_dict: dict, var_list: list, constants: list) -
     [string]
         single string with all the equations typed in latex format
     """
-    sym_cte_list = []
-    for idx in range(len(var_list)):
-        sym_cte_list.append(var_list[idx])
+
+    sym_cte_list = [var for var in var_list]
     for idx in range(len(constants) - len(var_list)):
         sym_cte_list.append('alpha_' + str(idx))
+
     A = ''
     for term in eqn:
         one_term = False
         if len(eqn) == 1:
             one_term = True
-        A = A + dict_to_latex(term, var_dict, var_list,
-                              sym_cte_list, one_term) + '+'
-    A = A[:-1]
-    A = A + '=0'
-    return A
+        A += dict_to_latex(term, var_dict, var_list,
+                           sym_cte_list, one_term) + '+'
+    return A[:-1] + '=0'
 
 
 def latex_det_eqn(det_eqn, var_dict, var_list, constants):
