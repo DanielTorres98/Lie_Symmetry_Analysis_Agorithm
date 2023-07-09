@@ -41,11 +41,11 @@ class Latex():
         Returns
         -------
         str
-            The latex code to write the term. 
+            latex code to write the term
         """
         variable = self.var_dict[term['variable']]
         derivatives = term['derivatives']
-        a = ''
+        term_latex = ''
         if one_term:
             coeff = ''
         else:
@@ -53,16 +53,16 @@ class Latex():
             for cte, n in zip(self.symbolic_constants, term['constants']):
                 if len(str(cte)) > 1:
                     if n == 1:
-                        a += "\\" + str(cte)
+                        term_latex += "\\" + str(cte)
                     if n > 1:
-                        a += "\\" + str(cte) + '^' + str(n)
+                        term_latex += "\\" + str(cte) + '^' + str(n)
                 else:
                     if n == 1:
-                        a += str(cte)
+                        term_latex += str(cte)
                     if n > 1:
-                        a += str(cte) + '^' + str(n)
+                        term_latex += str(cte) + '^' + str(n)
         D = self.format_derivatives(derivatives, variable)
-        return coeff + a + D
+        return coeff + term_latex + D
 
     def format_derivatives(self, derivatives: list, variable: str):
         """Given a list of derivatives executes all the derivatives on the variable.
@@ -78,7 +78,7 @@ class Latex():
         Returns
         -------
         str
-            latex code for the derivative.
+            latex code for the derivatives
         """
         var_str = '\\' + variable
         for D, var in zip(derivatives, self.variables):
@@ -101,12 +101,12 @@ class Latex():
         Parameters
         ----------
         equation : dict
-            dictionary containing all the determinant equations
+            dictionary containing a determinant equation
 
         Returns
         -------
         str
-            single string with all the equations typed in latex format
+            string with all terms of a single equation typed in latex format
         """
         latex_equation = ''
         one_term = (len(equation) == 1)
