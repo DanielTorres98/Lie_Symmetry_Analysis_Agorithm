@@ -52,19 +52,19 @@ class Latex():
             coeff = str(term['coefficient'])
             if coeff == '-1':
                 coeff = "-"
-            if coeff == '1':
+            elif coeff == '1':
                 coeff = ""
+
             for cte, n in zip(self.symbolic_constants, term['constants']):
-                if len(str(cte)) > 1:
-                    if n == 1:
-                        term_latex += "\\" + str(cte)
-                    if n > 1:
-                        term_latex += "\\" + str(cte) + '^' + str(n)
-                else:
-                    if n == 1:
-                        term_latex += str(cte)
-                    if n > 1:
-                        term_latex += str(cte) + '^' + str(n)
+                cte = str(cte)
+                if len(cte) > 1:
+                    cte = "\\" + cte
+
+                if n == 1:
+                    term_latex += cte
+                elif n > 1:
+                    term_latex += cte + '^' + str(n)
+
         D = self.format_derivatives(derivatives, variable)
         return coeff + term_latex + D
 
