@@ -86,17 +86,15 @@ class Latex():
         """
         var_str = '\\' + variable
         for D, var in zip(derivatives, self.variables):
+            var = str(var)
             for _ in range(D):
-                if len(str(variable)) > 1:
-                    if '_' in var_str:
-                        var_str += "\\" + var
-                    else:
-                        var_str += '_' + '{' + "\\" + var + '}'
+                if len(var) > 1:
+                    var = "\\" + var
+
+                if '_' in var_str:
+                    var_str +=  '{' + var + '}'
                 else:
-                    if '_' in var_str:
-                        var_str += var
-                    else:
-                        var_str += '_' + '{' + var + '}'
+                    var_str += '_' + '{' + var + '}'
         return var_str
 
     def format_equation(self, equation: dict) -> str:
