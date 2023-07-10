@@ -25,7 +25,7 @@ class Latex():
 
         diff = len(self.constants) - len(self.variables)
         alpha_id = [f'alpha_{idx}' for idx in range(diff)]
-        self.symbolic_constants = self.variables + alpha_id
+        self.symbolic_constants = constants+ self.variables + alpha_id
 
     def format_equation_term(self, term: dict, one_term: bool):
         """Given a dictionary it returns the symbolic equivalent. It drops all constants
@@ -126,4 +126,4 @@ class Latex():
         for equation in self.determining_equations.values():
             latex_system_of_eqns += self.format_equation(
                 equation) + "\\" + "\\" + "\n"
-        return latex_system_of_eqns
+        return latex_system_of_eqns.replace("+-", "-")
