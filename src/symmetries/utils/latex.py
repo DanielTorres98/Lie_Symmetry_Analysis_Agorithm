@@ -50,6 +50,10 @@ class Latex():
             coeff = ''
         else:
             coeff = str(term['coefficient'])
+            if coeff == '-1':
+                coeff = "-"
+            if coeff == '1':
+                coeff = ""
             for cte, n in zip(self.symbolic_constants, term['constants']):
                 if len(str(cte)) > 1:
                     if n == 1:
