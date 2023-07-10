@@ -25,7 +25,7 @@ class Latex():
 
         diff = len(self.constants) - len(self.variables)
         alpha_id = [f'alpha_{idx}' for idx in range(diff)]
-        self.symbolic_constants = constants+ self.variables + alpha_id
+        self.symbolic_constants = constants + self.variables + alpha_id
 
     def format_equation_term(self, term: dict, one_term: bool):
         """Given a dictionary it returns the symbolic equivalent. It drops all constants
@@ -87,13 +87,13 @@ class Latex():
                     if '_' in var_str:
                         var_str += "\\" + var
                     else:
-                        var_str += '_' + '{' + "\\" + var
+                        var_str += '_' + '{' + "\\" + var + '}'
                 else:
                     if '_' in var_str:
                         var_str += var
                     else:
-                        var_str += '_' + '{' + var
-        return var_str + '}'
+                        var_str += '_' + '{' + var + '}'
+        return var_str
 
     def format_equation(self, equation: dict) -> str:
         """This code generates the latex string format of the determinant equations
