@@ -66,9 +66,10 @@ class Latex():
                 if len(cte) > 1:
                     cte = "\\" + cte
 
-                term_latex += cte
-                if n > 1:
-                    term_latex += '^' + str(n)
+                if n == 1:
+                    term_latex += cte
+                elif n > 1:
+                    term_latex += cte + '^' + str(n)
 
             if term_latex:
                 term_latex += '*'
@@ -102,7 +103,6 @@ class Latex():
                 if '_' not in var_str:
                     var_str += '_'
                 var_str += '{' + var + '}'
-
         return var_str
 
     def format_equation(self, equation: dict) -> str:
