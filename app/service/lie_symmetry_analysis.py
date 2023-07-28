@@ -2,7 +2,7 @@
 simplifying the equations."""
 import warnings
 
-from ..src.system import Model
+from ..src.model import Model
 from ..src.determining_equations import DeterminingEquations
 
 

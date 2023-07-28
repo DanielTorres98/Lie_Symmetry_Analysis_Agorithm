@@ -7,7 +7,7 @@ from ..utils.algebra import key_ordering, str_to_dict, is_zero
 from ..utils.symbolic import sym_det_eqn, parse_variables
 from .latex import Latex
 from .system_of_equations import SystemOfEquations
-from .system import Model
+from .model import Model
 from typing import Union
 
 
