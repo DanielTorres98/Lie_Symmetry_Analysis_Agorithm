@@ -1,4 +1,4 @@
-from symmetries.analysis.lie_symmetry_analysis import point_symmetries
+from app.service.lie_symmetry_analysis import point_symmetries
 import sympy as sp
 from sympy import Derivative as D
 
