@@ -1,5 +1,4 @@
-matplotlib
-regex
-sympy
-pandas
-numpy
+regex==2022.10.31
+sympy==1.11.1
+pandas==2.0.3
+numpy==1.23.3
