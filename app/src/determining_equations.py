@@ -416,7 +416,7 @@ class DeterminingEquations(SystemOfEquations):
 
         return matrix
 
-    def print_latex(self)-> Latex:
+    def print_latex(self, replace_plus_minus: bool = True, print_ones: bool = False)-> Latex:
         backslash_char = "\\"
         latex_dict = {}
         var_list = []
@@ -447,6 +447,8 @@ class DeterminingEquations(SystemOfEquations):
             latex_dict,
             var_list,
             constants,
+            replace_plus_minus=replace_plus_minus,
+            print_ones=print_ones,
         )
         print(latex.format_determining_equations())
         return latex

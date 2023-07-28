@@ -4,7 +4,8 @@
 class Latex():
     """Latex class"""
 
-    def __init__(self, determining_equations, var_dict: dict, variables: list, constants: list):
+    def __init__(self, determining_equations, var_dict: dict, variables: list,
+                 constants: list, replace_plus_minus: bool = True, print_ones: bool = False):
         """Constructor
 
         Parameters
@@ -22,6 +23,9 @@ class Latex():
         self.var_dict = var_dict
         self.variables = variables
         self.constants = constants
+
+        self.replace_plus_minus = replace_plus_minus
+        self.print_ones = print_ones
 
         diff = len(self.constants) - len(self.variables)
         alpha_id = [f'alpha_{idx}' for idx in range(diff)]
@@ -45,25 +49,26 @@ class Latex():
         """
         variable = self.var_dict[term['variable']]
         derivatives = term['derivatives']
-        term_latex = ''
-        if one_term:
-            coefficient = ''
+
+        coefficient = str(term['coefficient'])
+        if self.print_ones:
+            coefficient += '*'
         else:
-            coefficient = str(term['coefficient'])
             if coefficient == '-1':
                 coefficient = "-"
             elif coefficient == '1':
                 coefficient = ""
 
+        term_latex = ''
+        if not one_term:
             for cte, n in zip(self.symbolic_constants, term['constants']):
                 cte = str(cte)
                 if len(cte) > 1:
                     cte = "\\" + cte
 
-                if n == 1:
-                    term_latex += cte
-                elif n > 1:
-                    term_latex += cte + '^' + str(n)
+                term_latex += cte
+                if n > 1:
+                    term_latex += '^' + str(n)
 
             if term_latex:
                 term_latex += '*'
@@ -94,10 +99,10 @@ class Latex():
                 if len(var) > 1:
                     var = "\\" + var
 
-                if '_' in var_str:
-                    var_str += '{' + var + '}'
-                else:
-                    var_str += '_' + '{' + var + '}'
+                if '_' not in var_str:
+                    var_str += '_'
+                var_str += '{' + var + '}'
+
         return var_str
 
     def format_equation(self, equation: dict) -> str:
@@ -119,14 +124,8 @@ class Latex():
             latex_equation += self.format_equation_term(term, one_term) + '+'
         return latex_equation[:-1] + '=0'
 
-    def format_determining_equations(self, replace_plus_minus=True) -> str:
+    def format_determining_equations(self) -> str:
         """Gives the latex code version of remaining determining equation.
-
-        Parameters
-        ----------
-        replace_plus_minus : bool
-            replace +- string with only -
-
         Returns
         -------
         str
@@ -136,6 +135,6 @@ class Latex():
         for equation in self.determining_equations.values():
             latex_system_of_eqns += self.format_equation(
                 equation) + "\\" + "\\" + "\n"
-        if replace_plus_minus:
+        if self.replace_plus_minus:
             latex_system_of_eqns = latex_system_of_eqns.replace("+-", "-")
         return latex_system_of_eqns
