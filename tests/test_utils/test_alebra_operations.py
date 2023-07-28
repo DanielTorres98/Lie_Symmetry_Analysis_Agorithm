@@ -1,4 +1,4 @@
-from symmetries.utils import algebra
+from app.utils import algebra
 
 def test_is_zero(is_zero_data_test):
     zero_term = {"coefficient": 4,

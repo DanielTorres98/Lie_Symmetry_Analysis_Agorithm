@@ -6,7 +6,7 @@ variables, etc.
 from copy import deepcopy
 import sympy
 from ..utils.combinatorics import list_combinatorics
-from .system_of_equations import SystemOfEquations
+from system_of_equations import SystemOfEquations
 from typing import Union
 
 
