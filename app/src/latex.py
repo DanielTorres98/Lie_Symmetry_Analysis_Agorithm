@@ -65,8 +65,11 @@ class Latex():
                 elif n > 1:
                     term_latex += cte + '^' + str(n)
 
+            if term_latex:
+                term_latex += '*'
+
         D = self.format_derivatives(derivatives, variable)
-        return coefficient + term_latex + D
+        return coefficient  + term_latex + D
 
     def format_derivatives(self, derivatives: list, variable: str):
         """Given a list of derivatives executes all the derivatives on the variable.
@@ -92,7 +95,7 @@ class Latex():
                     var = "\\" + var
 
                 if '_' in var_str:
-                    var_str +=  '{' + var + '}'
+                    var_str += '{' + var + '}'
                 else:
                     var_str += '_' + '{' + var + '}'
         return var_str
@@ -116,8 +119,13 @@ class Latex():
             latex_equation += self.format_equation_term(term, one_term) + '+'
         return latex_equation[:-1] + '=0'
 
-    def format_determining_equations(self):
+    def format_determining_equations(self, replace_plus_minus=True) -> str:
         """Gives the latex code version of remaining determining equation.
+
+        Parameters
+        ----------
+        replace_plus_minus : bool
+            replace +- string with only -
 
         Returns
         -------
@@ -128,4 +136,6 @@ class Latex():
         for equation in self.determining_equations.values():
             latex_system_of_eqns += self.format_equation(
                 equation) + "\\" + "\\" + "\n"
-        return latex_system_of_eqns.replace("+-", "-")
+        if replace_plus_minus:
+            latex_system_of_eqns = latex_system_of_eqns.replace("+-", "-")
+        return latex_system_of_eqns
