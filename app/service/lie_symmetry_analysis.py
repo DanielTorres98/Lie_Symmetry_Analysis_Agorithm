@@ -2,8 +2,8 @@
 simplifying the equations."""
 import warnings
 
-from symmetries.objects.system import Model
-from symmetries.objects.determining_equations import DeterminingEquations
+from ..src.system import Model
+from ..src.determining_equations import DeterminingEquations
 
 
 def point_symmetries(

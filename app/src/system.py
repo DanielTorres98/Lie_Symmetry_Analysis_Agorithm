@@ -5,7 +5,7 @@ variables, etc.
 
 from copy import deepcopy
 import sympy
-from symmetries.utils.combinatorics import list_combinatorics
+from ..utils.combinatorics import list_combinatorics
 from .system_of_equations import SystemOfEquations
 from typing import Union
 

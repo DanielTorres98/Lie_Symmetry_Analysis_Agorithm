@@ -4,7 +4,7 @@ import re
 import numpy as np
 import sympy
 
-from symmetries.utils.DEint import compare_derivatives, drop_constants
+from .DEint import compare_derivatives, drop_constants
 
 def is_zero(zero_term:dict, term:dict):
     """Given a term that is zero, returns true if

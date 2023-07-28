@@ -1,7 +1,7 @@
 """File with functions regarding symbolic treatment."""
 import sympy
 from sympy import Derivative as D
-from symmetries.utils.combinatorics import list_combinatorics
+from .combinatorics import list_combinatorics
 
 
 def dict_to_symb(term, var_dict, var_list, sym_cte_list, one_term):
