@@ -47,13 +47,13 @@ class Latex():
         derivatives = term['derivatives']
         term_latex = ''
         if one_term:
-            coeff = ''
+            coefficient = ''
         else:
-            coeff = str(term['coefficient'])
-            if coeff == '-1':
-                coeff = "-"
-            elif coeff == '1':
-                coeff = ""
+            coefficient = str(term['coefficient'])
+            if coefficient == '-1':
+                coefficient = "-"
+            elif coefficient == '1':
+                coefficient = ""
 
             for cte, n in zip(self.symbolic_constants, term['constants']):
                 cte = str(cte)
@@ -66,7 +66,7 @@ class Latex():
                     term_latex += cte + '^' + str(n)
 
         D = self.format_derivatives(derivatives, variable)
-        return coeff + term_latex + D
+        return coefficient + term_latex + D
 
     def format_derivatives(self, derivatives: list, variable: str):
         """Given a list of derivatives executes all the derivatives on the variable.
