@@ -11,6 +11,8 @@ class MatrixForm():
         self.equations = self._split(latex_form)
         self.variables = self._get_variables()
         self.matrix = sp.zeros(len(self.equations), len(self.variables))
+        self._populate_matrix()
+        self.single_terms = []
 
     def _split(self, latex_form: str) -> list:
         equations = latex_form.split("\\\n")
@@ -25,9 +27,9 @@ class MatrixForm():
                 variable_s = sp.symbols(variable)
                 if variable_s not in variables:
                     variables.append(variable_s)
-        return variables
+        return sp.Matrix(variables)
 
-    def populate_matrix(self) -> None:
+    def _populate_matrix(self) -> None:
         self.matrix = sp.zeros(len(self.equations), len(self.variables))
         for r, equation_terms in enumerate(self.equations):
             for term in equation_terms:
@@ -38,7 +40,8 @@ class MatrixForm():
                         coefficient *= sp.symbols(coefficients[1])
                 else:
                     coefficient = 1
-                idx = self.variables.index(sp.symbols(term.split('*')[-1]))
+                idx = list(self.variables).index(
+                    sp.symbols(term.split('*')[-1]))
                 if not self.matrix[r, idx]:
                     self.matrix[r, idx] = coefficient
                 else:
@@ -54,30 +57,33 @@ class MatrixForm():
         return sorted(zipped, key=lambda x: x[0])
 
     def delete_single_terms(self, inplace: bool = True) -> tuple:
-        m = deepcopy(self.matrix)
-        v = deepcopy(self.variables)
+        matrix = deepcopy(self.matrix)
+        variables = deepcopy(self.variables)
+        single_terms = deepcopy(self.single_terms)
 
         i = 0
         for n, r, c in self.identify_common_terms():
             if n > 1:
                 break
-            m.row_del(r-i)
-            m.col_del(c[0]-i)
-            del v[c[0]-i]
+            matrix.row_del(r-i)
+            matrix.col_del(c[0]-i)
+            single_terms.append(list(variables)[c[0]-i])
+            variables.row_del(c[0]-i)
             i += 1
 
         if inplace:
-            self.matrix = m
-            self.variables = v
+            self.matrix = matrix
+            self.variables = variables
+            self.single_terms = single_terms
 
-        return m, v
+        return matrix, variables, single_terms
+
+    def turn_into_symb_eq(self):
+        equations = self.matrix@self.variables
+        return sp.Matrix(list(self.single_terms)+list(equations))
 
     def turn_into_latex():
         pass
-
-    def turn_into_symb_eq():
-        pass
-
 # latex_form = latex.format_determining_equations(False)
 # m = MatrixForm(latex_det)
 # m.populate_matrix()
