@@ -4,7 +4,7 @@ from copy import deepcopy
 import sympy
 import numpy as np
 from symmetries.utils.algebra import key_ordering, str_to_dict, is_zero
-from symmetries.utils.latex import latex_det_eqn
+from symmetries.utils.latex import Latex
 from symmetries.utils.symbolic import sym_det_eqn, parse_variables
 from .system_of_equations import SystemOfEquations
 from .system import Model
@@ -416,7 +416,7 @@ class DeterminingEquations(SystemOfEquations):
 
         return matrix
 
-    def print_latex(self):
+    def print_latex(self)-> None:
         backslash_char = "\\"
         latex_dict = {}
         var_list = []
@@ -424,24 +424,28 @@ class DeterminingEquations(SystemOfEquations):
             # If the string length of the variable is bigger than one assumes it is a greek letter.
             #
             var = str(variable)
-            if len(str(var)) > 1:
-                latex_dict[f'xi{var}'] = f'xi^{"{"}{backslash_char}{variable}'
+            if len(var) > 1:
+                latex_dict[f'xi{var}'] = f'xi^{"{"}{backslash_char}{var}{"}"}'
             else:
-                latex_dict[f'xi{var}'] = f'xi^{"{"}{variable}{"}"}'
+                latex_dict[f'xi{var}'] = f'xi^{"{"}{var}{"}"}'
             var_list.append(var)
+
         for variable in self.dependent_variables:
             # If the string length of the variable is bigger than one assumes it is a greek letter.
             #
             var = str(variable).split("(")[0]
-            if len(str(var)) > 1:
+            if len(var) > 1:
                 latex_dict[f'eta{var}'] = f'eta^{"{"}{backslash_char}{var}{"}"}'
             else:
                 latex_dict[f'eta{var}'] = f'eta^{"{"}{var}{"}"}'
             var_list.append(var)
-        constants = []
-        for cte in self.constants:
-            constants.append(str(cte))
-        latex_code = latex_det_eqn(
-            self.determining_equations, latex_dict, var_list, constants)
-        latex_code = latex_code.replace("+-", "-")
-        return print(latex_code)
+
+        constants = [str(cte) for cte in self.constants]
+
+        latex_code = Latex(
+            self.determining_equations,
+            latex_dict,
+            var_list,
+            constants,
+        ).format_determining_equations()
+        print(latex_code)

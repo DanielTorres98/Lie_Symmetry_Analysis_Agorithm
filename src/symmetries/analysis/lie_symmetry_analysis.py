@@ -2,7 +2,6 @@
 simplifying the equations."""
 import warnings
 
-from symmetries.utils.latex import latex_det_eqn
 from symmetries.objects.system import Model
 from symmetries.objects.determining_equations import DeterminingEquations
 
@@ -14,7 +13,6 @@ def point_symmetries(
     independent_variables: list,
     dependent_variables: list,
     constants: list,
-    latex: bool = False
 ):
     # Ignore deprecated warnings. This was implemented to ignore sympy's warning when using a
     # a matrix to show the determining equations.
@@ -29,7 +27,7 @@ def point_symmetries(
         order=order,
         **variables
     )
-    # This section of the code generates the infitesimals for all the independent variables and
+    # This section of the code generates the infinitesimals for all the independent variables and
     # dependent variables.
     #
     model.infinitesimals_generator()

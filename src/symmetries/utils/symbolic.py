@@ -67,6 +67,7 @@ def take_derivative(dev_list, var_string, var_list):
             var_string += '_' + var
     return sympy.symbols(var_string)
 
+
 def Diff(f, y_var, x_var, order):
     dy = D(y_var, x_var).expand()
     Df = D(f, x_var).expand()
@@ -91,11 +92,10 @@ def sym_det_eqn(det_eqn, independent_variables, dependent_variables, constants):
     var_list = independent_variables + dependent_variables
 
     indep_var_str = [str(ele).replace(' ', '') for ele in independent_variables]
-    for dep_var in indep_var_str:
-        var = dep_var.split('(')[0]
+    for indep_var in indep_var_str:
+        var = indep_var.split('(')[0]
         if len(var) > 1:
-            var_dict[f'xi{var}'] = 'eta^' + \
-                '(' + "\\" + var + ')'
+            var_dict[f'xi{var}'] = 'xi^' + '(' + "\\" + var + ')'
         else:
             var_dict[f'xi{var}'] = f'xi^({var})'
 
@@ -103,16 +103,16 @@ def sym_det_eqn(det_eqn, independent_variables, dependent_variables, constants):
     for dep_var in dep_var_str:
         var = dep_var.split('(')[0]
         if len(var) > 1:
-            var_dict[f'eta{var}'] = 'eta^' + \
-                '(' + "\\" + var + ')'
+            var_dict[f'eta{var}'] = 'eta^' + '(' + "\\" + var + ')'
         else:
             var_dict[f'eta{var}'] = f'eta^({var})'
 
     matrix = sympy.Matrix([[]])
     for i, eqn in enumerate(det_eqn.values()):
         matrix = matrix.row_insert(i,
-        sympy.Matrix([[i, sympy.Eq(get_symbolic_terms(eqn, var_dict, constants, var_list), 0)]])
-        )
+                                   sympy.Matrix(
+                                       [[i, sympy.Eq(get_symbolic_terms(eqn, var_dict, constants, var_list), 0)]])
+                                   )
     return matrix
 
 
@@ -135,8 +135,9 @@ def get_symbolic_terms(eqn, var_dict, list_cte, var_list):
     for term in eqn:
         one_term = len(eqn) == 1
         a += dict_to_symb(term, var_dict, var_list,
-                             sym_cte_list, one_term)
+                          sym_cte_list, one_term)
     return a
+
 
 def parse_variables(independent_variables, dependent_variables):
     """Creates dictionary with translation to symbolic terms of variables.
@@ -149,7 +150,7 @@ def parse_variables(independent_variables, dependent_variables):
     var_dict = {}
 
     indep_var_str = [str(ele).replace(' ', '')
-                        for ele in independent_variables]
+                     for ele in independent_variables]
     for dep_var in indep_var_str:
         var = dep_var.split('(')[0]
         if len(var) > 1:
@@ -158,7 +159,7 @@ def parse_variables(independent_variables, dependent_variables):
             var_dict[f'xi{var}'] = f'xi^({var})'
 
     dep_var_str = [str(ele).replace(' ', '')
-                    for ele in dependent_variables]
+                   for ele in dependent_variables]
     for dep_var in dep_var_str:
         var = dep_var.split('(')[0]
         var_dict[f'eta{var}'] = f'eta^({var})'
